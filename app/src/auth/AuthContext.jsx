@@ -23,6 +23,9 @@ export function AuthProvider({ children }) {
 
   const refreshSetupStatus = useCallback(async () => {
     const data = await api('/setup/status')
+    if (typeof data?.setup_required !== 'boolean') {
+      throw new Error('Invalid setup status response from API')
+    }
     setSetupRequired(data.setup_required)
     return data.setup_required
   }, [])

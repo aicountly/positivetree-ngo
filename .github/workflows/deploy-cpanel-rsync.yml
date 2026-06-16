@@ -57,6 +57,8 @@ jobs:
         run: |
           rsync -avz --delete \
             --exclude='.env' \
+            --exclude='api/.env' \
+            --exclude='api/data/' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
             ./public_html/ \
             "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}"

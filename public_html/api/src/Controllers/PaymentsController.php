@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Auth;
 use App\DonationCauses;
 use App\Http\Request;
 use App\Http\Response;

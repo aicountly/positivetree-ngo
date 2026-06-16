@@ -55,6 +55,10 @@ CORS_ORIGIN=http://localhost:5173
    ```
 5. Visit `https://your-domain/app/setup` once to create the superadmin
 
+**Important:** Deploy rsync must exclude `api/data/` and `api/.env` so production SQLite and secrets are never deleted. If `donations.sqlite` is missing, the API returns `setup_required: true` and `/app/setup` becomes reachable again.
+
+Setup is allowed only when no superadmin exists. `POST /api/setup` returns `409 Setup already completed` once a superadmin row is present.
+
 ### Troubleshooting HTTP 500 on `/api/setup/status`
 
 | Symptom | Cause | Fix |

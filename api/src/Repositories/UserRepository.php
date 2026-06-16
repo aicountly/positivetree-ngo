@@ -44,6 +44,13 @@ class UserRepository
         return (int) $stmt->fetchColumn();
     }
 
+    public function hasSuperadmin(): bool
+    {
+        $stmt = Database::connection()->prepare('SELECT COUNT(*) FROM users WHERE role = :role');
+        $stmt->execute(['role' => 'superadmin']);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
     public function create(array $data): array
     {
         $now = nowIso();

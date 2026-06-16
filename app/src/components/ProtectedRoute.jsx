@@ -38,7 +38,7 @@ export function ProtectedRoute({ roles }) {
     return <InitErrorScreen message={initError} />
   }
 
-  if (setupRequired) {
+  if (setupRequired === true && !user) {
     return <Navigate to="/setup" replace />
   }
 
@@ -64,7 +64,7 @@ export function SuperadminRoute() {
     return <InitErrorScreen message={initError} />
   }
 
-  if (setupRequired) {
+  if (setupRequired === true && !user) {
     return <Navigate to="/setup" replace />
   }
 
@@ -98,7 +98,7 @@ export function PublicOnlyRoute() {
     return <InitErrorScreen message={initError} />
   }
 
-  if (setupRequired) {
+  if (setupRequired === true && !user) {
     return <Navigate to="/setup" replace />
   }
 
@@ -118,6 +118,10 @@ export function SetupRoute() {
 
   if (initError && setupRequired === undefined) {
     return <InitErrorScreen message={initError} />
+  }
+
+  if (setupRequired === true && user) {
+    return <Navigate to="/" replace />
   }
 
   if (setupRequired === false && user) {

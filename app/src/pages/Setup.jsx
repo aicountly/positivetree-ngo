@@ -1,12 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { Alert, Button, Card, Input } from '../components/ui'
 
 export default function Setup() {
-  const { setup } = useAuth()
+  const { setup, refreshSetupStatus } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [checking, setChecking] = useState(true)
+  const [allowed, setAllowed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function verifySetupAllowed() {
+      setChecking(true)
+      setError('')
+
+      try {
+        const required = await refreshSetupStatus()
+        if (cancelled) return
+
+        if (!required) {
+          setAllowed(false)
+          return
+        }
+
+        setAllowed(true)
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || 'Unable to verify setup status')
+          setAllowed(false)
+        }
+      } finally {
+        if (!cancelled) setChecking(false)
+      }
+    }
+
+    verifySetupAllowed()
+    return () => {
+      cancelled = true
+    }
+  }, [refreshSetupStatus])
 
   function updateField(field) {
     return (event) => setForm((current) => ({ ...current, [field]: event.target.value }))
@@ -29,10 +65,43 @@ export default function Setup() {
         password: form.password,
       })
     } catch (err) {
-      setError(err.message || 'Setup failed')
+      if (err.status === 409) {
+        setError('Setup has already been completed. Sign in with your existing superadmin account.')
+        setAllowed(false)
+      } else {
+        setError(err.message || 'Setup failed')
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Checking setup status...
+      </div>
+    )
+  }
+
+  if (!allowed) {
+    if (error) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+          <Card className="w-full max-w-md space-y-4">
+            <Alert tone="error">{error}</Alert>
+            <p className="text-sm text-slate-600">
+              If a superadmin already exists, sign in instead of creating a new account.
+            </p>
+            <a href="/app/login" className="inline-block text-sm font-medium text-green-700 hover:underline">
+              Go to sign in
+            </a>
+          </Card>
+        </div>
+      )
+    }
+
+    return <Navigate to="/login" replace />
   }
 
   return (

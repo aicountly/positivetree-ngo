@@ -20,13 +20,13 @@ class SetupController
     public function status(Request $request): void
     {
         Response::json([
-            'setup_required' => $this->users->count() === 0,
+            'setup_required' => !$this->users->hasSuperadmin(),
         ]);
     }
 
     public function create(Request $request): void
     {
-        if ($this->users->count() > 0) {
+        if ($this->users->hasSuperadmin()) {
             Response::error('Setup already completed', 409);
             return;
         }
