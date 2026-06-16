@@ -136,3 +136,54 @@ function uploadsDir(): string
 
     return $dir;
 }
+
+function documentLogoPath(): string
+{
+    return __DIR__ . '/assets/documents/logo.svg';
+}
+
+function normalizePan(?string $value): ?string
+{
+    if ($value === null) {
+        return null;
+    }
+
+    $pan = strtoupper(trim($value));
+    if ($pan === '') {
+        return null;
+    }
+
+    if (!preg_match('/^[A-Z]{5}[0-9]{4}[A-Z]$/', $pan)) {
+        return null;
+    }
+
+    return $pan;
+}
+
+function validatePan(?string $value): ?string
+{
+    if ($value === null || trim($value) === '') {
+        return 'Donor PAN is required before issuing certificate';
+    }
+
+    if (normalizePan($value) === null) {
+        return 'Invalid PAN format. Expected format: ABCDE1234F';
+    }
+
+    return null;
+}
+
+/** @return array{0: ?string, 1: ?string} [pan, error] */
+function parseOptionalPanInput(mixed $value): array
+{
+    if ($value === null || trim((string) $value) === '') {
+        return [null, null];
+    }
+
+    $pan = normalizePan((string) $value);
+    if ($pan === null) {
+        return [null, 'Invalid PAN format. Expected format: ABCDE1234F'];
+    }
+
+    return [$pan, null];
+}

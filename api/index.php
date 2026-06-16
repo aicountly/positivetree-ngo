@@ -78,6 +78,8 @@ try {
     $router->get('/settings/documents', fn ($req) => $documentSettings->show($req));
     $router->put('/settings/documents', fn ($req) => $documentSettings->update($req));
     $router->post('/settings/documents/logo', fn ($req) => $documentSettings->uploadLogo($req));
+    $router->post('/settings/documents/signature', fn ($req) => $documentSettings->uploadSignature($req));
+    $router->get('/settings/documents/signature', fn ($req) => $documentSettings->signatureImage($req));
     $router->get('/settings/documents/preview/receipt', fn ($req) => $documentSettings->previewReceipt($req));
     $router->get('/settings/documents/preview/certificate', fn ($req) => $documentSettings->previewCertificate($req));
     $router->get('/public/receipt/{token}', fn ($req, $params) => $publicReceipt->show($req, $params));

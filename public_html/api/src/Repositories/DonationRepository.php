@@ -26,6 +26,20 @@ class DonationRepository
             $where[] = 'status = :status';
             $params['status'] = $filters['status'];
         }
+        if (!empty($filters['certificate_status'])) {
+            $where[] = 'certificate_status = :certificate_status';
+            $params['certificate_status'] = $filters['certificate_status'];
+        }
+        if (!empty($filters['certificate_pending'])) {
+            $where[] = "status = 'completed' AND certificate_status = 'pending'";
+        }
+        if (!empty($filters['pan_status'])) {
+            if ($filters['pan_status'] === 'missing') {
+                $where[] = "(donor_pan IS NULL OR donor_pan = '')";
+            } elseif ($filters['pan_status'] === 'present') {
+                $where[] = "(donor_pan IS NOT NULL AND donor_pan != '')";
+            }
+        }
         if (!empty($filters['from'])) {
             $where[] = 'donated_at >= :from';
             $params['from'] = $filters['from'];
@@ -35,7 +49,7 @@ class DonationRepository
             $params['to'] = $filters['to'] . 'T23:59:59Z';
         }
         if (!empty($filters['search'])) {
-            $where[] = '(donor_name LIKE :search ESCAPE \'\\\' OR donor_email LIKE :search ESCAPE \'\\\' OR receipt_number LIKE :search ESCAPE \'\\\' OR transaction_ref LIKE :search ESCAPE \'\\\')';
+            $where[] = '(donor_name LIKE :search ESCAPE \'\\\' OR donor_email LIKE :search ESCAPE \'\\\' OR donor_pan LIKE :search ESCAPE \'\\\' OR receipt_number LIKE :search ESCAPE \'\\\' OR transaction_ref LIKE :search ESCAPE \'\\\')';
             $params['search'] = '%' . escapeLike($filters['search']) . '%';
         }
 
@@ -121,12 +135,12 @@ class DonationRepository
 
         $stmt = Database::connection()->prepare(
             'INSERT INTO donations (
-                receipt_number, donor_name, donor_email, donor_phone, amount_paise, currency,
+                receipt_number, donor_name, donor_email, donor_phone, donor_pan, amount_paise, currency,
                 channel, cause, payment_method, transaction_ref, razorpay_order_id, razorpay_payment_id,
                 status, notes, donated_at, created_by, created_at, updated_at,
                 certificate_status, public_receipt_token
             ) VALUES (
-                :receipt_number, :donor_name, :donor_email, :donor_phone, :amount_paise, :currency,
+                :receipt_number, :donor_name, :donor_email, :donor_phone, :donor_pan, :amount_paise, :currency,
                 :channel, :cause, :payment_method, :transaction_ref, :razorpay_order_id, :razorpay_payment_id,
                 :status, :notes, :donated_at, :created_by, :created_at, :updated_at,
                 :certificate_status, :public_receipt_token
@@ -138,6 +152,7 @@ class DonationRepository
             'donor_name' => trim($data['donor_name']),
             'donor_email' => $data['donor_email'] ?? null,
             'donor_phone' => $data['donor_phone'] ?? null,
+            'donor_pan' => $data['donor_pan'] ?? null,
             'amount_paise' => (int) $data['amount_paise'],
             'currency' => $data['currency'] ?? 'INR',
             'channel' => $data['channel'],
@@ -169,7 +184,7 @@ class DonationRepository
         $fields = [];
         $params = ['id' => $id];
         $allowed = [
-            'donor_name', 'donor_email', 'donor_phone', 'amount_paise', 'cause',
+            'donor_name', 'donor_email', 'donor_phone', 'donor_pan', 'amount_paise', 'cause',
             'payment_method', 'transaction_ref', 'status', 'notes', 'donated_at', 'receipt_number',
         ];
 
@@ -355,6 +370,8 @@ class DonationRepository
             'donor_name' => $row['donor_name'],
             'donor_email' => $row['donor_email'],
             'donor_phone' => $row['donor_phone'],
+            'donor_pan' => $row['donor_pan'] ?? null,
+            'has_donor_pan' => !empty($row['donor_pan']),
             'amount_paise' => (int) $row['amount_paise'],
             'amount_inr' => round((int) $row['amount_paise'] / 100, 2),
             'currency' => $row['currency'],

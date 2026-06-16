@@ -140,6 +140,51 @@ export async function previewDocument(type) {
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
+export async function uploadDocumentSignature(file) {
+  const token = getToken()
+  const formData = new FormData()
+  formData.append('signature', file)
+
+  const response = await fetch(`${API_BASE}/settings/documents/signature`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+
+  const data = await response.json()
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || 'Unable to upload signature')
+  }
+
+  return data
+}
+
+export async function fetchSignaturePreviewBlob() {
+  const token = getToken()
+  const response = await fetch(`${API_BASE}/settings/documents/signature`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
+
+  if (!response.ok) {
+    throw new Error('Unable to load signature preview')
+  }
+
+  return response.blob()
+}
+
 export async function uploadDocumentLogo(file) {
   const token = getToken()
   const formData = new FormData()

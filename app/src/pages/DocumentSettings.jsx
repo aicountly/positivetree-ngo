@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { api, previewDocument, uploadDocumentLogo } from '../api/client'
+import { api, fetchSignaturePreviewBlob, previewDocument, uploadDocumentSignature } from '../api/client'
 import { Alert, Button, Card, Input, Select, Textarea } from '../components/ui'
+
+const DOCUMENT_LOGO_SRC = '/images/2023/07/logo-tree.svg'
 
 const PAPER_OPTIONS = [
   { value: 'A4', label: 'A4' },
@@ -19,21 +21,28 @@ const RECEIPT_FIELD_LABELS = {
   channel: 'Channel',
   payment_method: 'Payment method',
   transaction_ref: 'Transaction reference',
+  amount_words: 'Amount in words',
+  payment_status: 'Payment status',
+  donated_at: 'Receipt date',
   notes: 'Notes',
 }
 
 const CERTIFICATE_FIELD_LABELS = {
-  amount_words: 'Amount in words',
-  cause: 'Cause',
   receipt_number: 'Receipt number',
   certificate_number: 'Certificate number',
+  cause: 'Cause',
   donated_at: 'Donation date',
+  channel: 'Donation mode',
+  payment_method: 'Payment method',
+  donor_pan: 'Donor PAN',
+  amount_words: 'Amount in words',
 }
 
 function emptySettings() {
   return {
     organization: {
       organization_name: '',
+      tagline: '',
       address_lines: [''],
       phone: '',
       email: '',
@@ -43,9 +52,12 @@ function emptySettings() {
     receipt: {
       title: '',
       footer_text: '',
+      banner_text: '',
       signature_name: '',
       signature_title: '',
-      accent_color: '#15803d',
+      signature_filename: null,
+      accent_color: '#20994D',
+      brand_brown: '#986326',
       show_fields: {},
       print: {
         paper: 'A4',
@@ -61,10 +73,13 @@ function emptySettings() {
       opening_text: '',
       body_text: '',
       closing_text: '',
+      eighty_g_registration_number: '',
+      eighty_g_notes: [],
       signatory_name: '',
       signatory_title: '',
       signatory_label: '',
       accent_color: '#15803d',
+      brand_brown: '#986326',
       show_fields: {},
       print: {
         paper: 'A4',
@@ -141,7 +156,8 @@ export default function DocumentSettings() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingSignature, setUploadingSignature] = useState(false)
+  const [signaturePreview, setSignaturePreview] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -163,6 +179,33 @@ export default function DocumentSettings() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    let objectUrl = ''
+
+    async function loadSignaturePreview() {
+      if (!settings.receipt?.signature_filename) {
+        setSignaturePreview('')
+        return
+      }
+
+      try {
+        const blob = await fetchSignaturePreviewBlob()
+        if (cancelled) return
+        objectUrl = URL.createObjectURL(blob)
+        setSignaturePreview(objectUrl)
+      } catch {
+        if (!cancelled) setSignaturePreview('')
+      }
+    }
+
+    loadSignaturePreview()
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [settings.receipt?.signature_filename])
 
   function updateOrganization(field, value) {
     setSettings((current) => ({
@@ -196,6 +239,14 @@ export default function DocumentSettings() {
     }))
   }
 
+  function updateEightyGNotes(value) {
+    const notes = value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+    updateDocumentSection('certificate', 'eighty_g_notes', notes)
+  }
+
   async function handleSave(event) {
     event.preventDefault()
     setError('')
@@ -220,22 +271,22 @@ export default function DocumentSettings() {
     }
   }
 
-  async function handleLogoUpload(event) {
+  async function handleSignatureUpload(event) {
     const file = event.target.files?.[0]
     if (!file) return
 
     setError('')
     setMessage('')
-    setUploadingLogo(true)
+    setUploadingSignature(true)
 
     try {
-      const result = await uploadDocumentLogo(file)
+      const result = await uploadDocumentSignature(file)
       setSettings(result.settings)
-      setMessage('Logo uploaded.')
+      setMessage('Signature image uploaded.')
     } catch (err) {
       setError(err.message)
     } finally {
-      setUploadingLogo(false)
+      setUploadingSignature(false)
       event.target.value = ''
     }
   }
@@ -282,6 +333,11 @@ export default function DocumentSettings() {
               value={settings.organization.organization_name}
               onChange={(e) => updateOrganization('organization_name', e.target.value)}
             />
+            <Input
+              label="Tagline"
+              value={settings.organization.tagline || ''}
+              onChange={(e) => updateOrganization('tagline', e.target.value)}
+            />
             {(settings.organization.address_lines || ['']).map((line, index) => (
               <Input
                 key={index}
@@ -309,11 +365,14 @@ export default function DocumentSettings() {
             </div>
             <div>
               <span className="mb-1 block text-sm font-medium text-slate-700">Logo</span>
-              {settings.organization.logo_filename && (
-                <p className="mb-2 text-sm text-slate-600">Current: {settings.organization.logo_filename}</p>
-              )}
-              <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoUpload} />
-              {uploadingLogo && <p className="mt-2 text-sm text-slate-600">Uploading...</p>}
+              <img
+                src={DOCUMENT_LOGO_SRC}
+                alt="Positive Tree logo"
+                className="mb-2 h-20 w-auto object-contain"
+              />
+              <p className="text-sm text-slate-600">
+                Fixed organization logo used on all receipt and certificate PDFs.
+              </p>
             </div>
           </div>
         </Card>
@@ -329,20 +388,58 @@ export default function DocumentSettings() {
             {tab === 'receipt' ? (
               <>
                 <Textarea
-                  label="Footer text"
+                  label="Acknowledgement text"
                   value={settings.receipt.footer_text}
                   onChange={(e) => updateDocumentSection('receipt', 'footer_text', e.target.value)}
                 />
+                <Textarea
+                  label="Bottom banner text"
+                  value={settings.receipt.banner_text || ''}
+                  onChange={(e) => updateDocumentSection('receipt', 'banner_text', e.target.value)}
+                />
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input
-                    label="Signature name"
+                    label="Signature label"
                     value={settings.receipt.signature_name}
                     onChange={(e) => updateDocumentSection('receipt', 'signature_name', e.target.value)}
                   />
                   <Input
-                    label="Signature title"
+                    label="Signature organization line"
                     value={settings.receipt.signature_title}
                     onChange={(e) => updateDocumentSection('receipt', 'signature_title', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <span className="mb-1 block text-sm font-medium text-slate-700">Signature image</span>
+                  {signaturePreview && (
+                    <img
+                      src={signaturePreview}
+                      alt="Uploaded signature"
+                      className="mb-2 max-h-20 object-contain"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleSignatureUpload}
+                  />
+                  {uploadingSignature && <p className="mt-2 text-sm text-slate-600">Uploading signature...</p>}
+                  <p className="mt-2 text-sm text-slate-600">
+                    Upload a PNG/JPG/WebP signature image used on receipt and certificate PDFs.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input
+                    label="Green accent color"
+                    type="color"
+                    value={settings.receipt.accent_color}
+                    onChange={(e) => updateDocumentSection('receipt', 'accent_color', e.target.value)}
+                  />
+                  <Input
+                    label="Brown brand color"
+                    type="color"
+                    value={settings.receipt.brand_brown || '#986326'}
+                    onChange={(e) => updateDocumentSection('receipt', 'brand_brown', e.target.value)}
                   />
                 </div>
               </>
@@ -380,14 +477,37 @@ export default function DocumentSettings() {
                     onChange={(e) => updateDocumentSection('certificate', 'signatory_title', e.target.value)}
                   />
                 </div>
+                <Input
+                  label="80G registration number"
+                  value={settings.certificate.eighty_g_registration_number || ''}
+                  onChange={(e) =>
+                    updateDocumentSection('certificate', 'eighty_g_registration_number', e.target.value)
+                  }
+                />
+                <Textarea
+                  label="80G bullet notes (one per line)"
+                  value={(settings.certificate.eighty_g_notes || []).join('\n')}
+                  onChange={(e) => updateEightyGNotes(e.target.value)}
+                />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Input
+                    label="Green accent color"
+                    type="color"
+                    value={settings.certificate.accent_color}
+                    onChange={(e) => updateDocumentSection('certificate', 'accent_color', e.target.value)}
+                  />
+                  <Input
+                    label="Brown brand color"
+                    type="color"
+                    value={settings.certificate.brand_brown || '#986326'}
+                    onChange={(e) => updateDocumentSection('certificate', 'brand_brown', e.target.value)}
+                  />
+                </div>
+                <p className="text-sm text-slate-600">
+                  Certificate PDFs use the signature image uploaded on the Receipt tab.
+                </p>
               </>
             )}
-            <Input
-              label="Accent color"
-              type="color"
-              value={activeDoc.accent_color}
-              onChange={(e) => updateDocumentSection(tab, 'accent_color', e.target.value)}
-            />
           </div>
         </Card>
 

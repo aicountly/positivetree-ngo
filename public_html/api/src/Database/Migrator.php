@@ -13,6 +13,7 @@ class Migrator
         self::ensureColumn($pdo, 'donations', 'certificate_approved_at', 'TEXT');
         self::ensureColumn($pdo, 'donations', 'certificate_approved_by', 'INTEGER');
         self::ensureColumn($pdo, 'donations', 'public_receipt_token', 'TEXT');
+        self::ensureColumn($pdo, 'donations', 'donor_pan', 'TEXT');
 
         $pdo->exec(
             'CREATE TABLE IF NOT EXISTS certificate_sequences (

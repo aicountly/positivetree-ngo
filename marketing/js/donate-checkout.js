@@ -86,12 +86,14 @@
 
     try {
       const formData = new FormData(form);
+      const donorPan = String(formData.get('donor_pan') || '').trim().toUpperCase();
       const payload = {
         cause: selectedCause,
         amount_inr: Number(formData.get('amount_inr')),
         donor_name: String(formData.get('donor_name') || '').trim(),
         donor_email: String(formData.get('donor_email') || '').trim(),
         donor_phone: String(formData.get('donor_phone') || '').trim() || null,
+        donor_pan: donorPan || null,
       };
 
       if (!payload.donor_name || !payload.donor_email || payload.amount_inr < 1) {

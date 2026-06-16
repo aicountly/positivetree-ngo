@@ -9,7 +9,7 @@ const navLinkClass = ({ isActive }) =>
   }`
 
 function NavItems({ onNavigate }) {
-  const { isSuperadmin } = useAuth()
+  const { canWrite, isSuperadmin } = useAuth()
 
   return (
     <>
@@ -19,6 +19,11 @@ function NavItems({ onNavigate }) {
       <NavLink to="/donations" className={navLinkClass} onClick={onNavigate}>
         Donations
       </NavLink>
+      {canWrite && (
+        <NavLink to="/certificates/pending" className={navLinkClass} onClick={onNavigate}>
+          Pending certificates
+        </NavLink>
+      )}
       {isSuperadmin && (
         <>
           <NavLink to="/settings/documents" className={navLinkClass} onClick={onNavigate}>

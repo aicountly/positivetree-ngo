@@ -20,6 +20,7 @@ export default function DonationForm() {
     donor_name: '',
     donor_email: '',
     donor_phone: '',
+    donor_pan: '',
     amount_inr: '',
     cause: '',
     payment_method: 'cash',
@@ -81,6 +82,15 @@ export default function DonationForm() {
             <Input label="Email" type="email" value={form.donor_email} onChange={updateField('donor_email')} />
             <Input label="Phone" value={form.donor_phone} onChange={updateField('donor_phone')} />
           </div>
+          <Input
+            label="PAN (optional)"
+            value={form.donor_pan}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, donor_pan: event.target.value.toUpperCase() }))
+            }
+            placeholder="ABCDE1234F"
+            maxLength={10}
+          />
           <div className="grid gap-4 md:grid-cols-2">
             <Input
               label="Amount (INR)"

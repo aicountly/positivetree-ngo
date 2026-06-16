@@ -71,11 +71,18 @@ class DonationsController
             return;
         }
 
+        [$donorPan, $panError] = parseOptionalPanInput($body['donor_pan'] ?? null);
+        if ($panError !== null) {
+            Response::error($panError, 422);
+            return;
+        }
+
         $donation = $this->donations->create([
             'receipt_number' => $this->receiptNumbers->next(),
             'donor_name' => $donorName,
             'donor_email' => $body['donor_email'] ?? null,
             'donor_phone' => $body['donor_phone'] ?? null,
+            'donor_pan' => $donorPan,
             'amount_paise' => $amountPaise,
             'channel' => 'offline',
             'cause' => $cause,
@@ -103,7 +110,19 @@ class DonationsController
         }
 
         if ($existing['channel'] === 'online') {
-            Response::error('Online donations cannot be edited manually', 422);
+            if (!array_key_exists('donor_pan', $body)) {
+                Response::error('Online donations can only be updated to add or change donor PAN', 422);
+                return;
+            }
+
+            [$donorPan, $panError] = parseOptionalPanInput($body['donor_pan']);
+            if ($panError !== null) {
+                Response::error($panError, 422);
+                return;
+            }
+
+            $updated = $this->donations->update($id, ['donor_pan' => $donorPan]);
+            Response::json(['donation' => $updated]);
             return;
         }
 
@@ -114,6 +133,15 @@ class DonationsController
             if (array_key_exists($field, $body)) {
                 $data[$field] = $body[$field];
             }
+        }
+
+        if (array_key_exists('donor_pan', $body)) {
+            [$donorPan, $panError] = parseOptionalPanInput($body['donor_pan']);
+            if ($panError !== null) {
+                Response::error($panError, 422);
+                return;
+            }
+            $data['donor_pan'] = $donorPan;
         }
 
         if (array_key_exists('donated_at', $body)) {
@@ -201,6 +229,11 @@ class DonationsController
             return;
         }
 
+        if (empty($donation['donor_pan'])) {
+            Response::error('Donor PAN is required before issuing certificate', 422);
+            return;
+        }
+
         $format = $request->query['format'] ?? 'pdf';
 
         if ($format === 'html') {
@@ -234,6 +267,12 @@ class DonationsController
 
         if ($donation['certificate_status'] === 'approved') {
             Response::json(['donation' => $donation]);
+            return;
+        }
+
+        $panError = validatePan($donation['donor_pan'] ?? null);
+        if ($panError !== null) {
+            Response::error($panError, 422);
             return;
         }
 

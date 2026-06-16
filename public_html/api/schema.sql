@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS donations (
     donor_name TEXT NOT NULL,
     donor_email TEXT,
     donor_phone TEXT,
+    donor_pan TEXT,
     amount_paise INTEGER NOT NULL,
     currency TEXT NOT NULL DEFAULT 'INR',
     channel TEXT NOT NULL CHECK (channel IN ('online', 'offline')),

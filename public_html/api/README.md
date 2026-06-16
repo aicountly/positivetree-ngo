@@ -85,7 +85,7 @@ curl -s https://your-domain/api/setup/status
 | GET | `/api/dashboard` | JWT | Dashboard stats |
 | GET | `/api/donations/causes` | JWT | Valid donation causes |
 | GET/POST | `/api/donations` | JWT | List / create offline donation |
-| GET/PUT | `/api/donations/{id}` | JWT | View / edit offline donation |
+| GET/PUT | `/api/donations/{id}` | JWT | View / edit donation (online: PAN only) |
 | GET | `/api/donations/{id}/receipt` | JWT | PDF/HTML receipt (configured template) |
 | GET | `/api/donations/{id}/certificate` | JWT | PDF/HTML certificate (approved only) |
 | POST | `/api/donations/{id}/approve-certificate` | admin+ | Approve donation for certificate |
@@ -108,24 +108,31 @@ curl -s https://your-domain/api/setup/status
 ## Roles
 
 - **superadmin** — manage users, donations, and document settings (`/app/settings/documents`)
-- **admin** — manage offline donations and approve donation certificates
+- **admin** — manage offline donations, add donor PAN, approve donation certificates (`/app/certificates/pending`)
 - **viewer** — read-only access to donations, receipts, and approved certificates
+
+## Donor PAN and certificates
+
+- Donor PAN is optional when recording or accepting a donation (online donate form, offline admin form).
+- PAN must be present and valid before Accounts can approve a certificate (`POST /api/donations/{id}/approve-certificate` returns `422` if missing).
+- Admins can add or edit PAN on any completed donation (online donations allow PAN-only updates via `PUT /api/donations/{id}`).
+- Pending certificate queue: `/app/certificates/pending` — filter with `GET /api/donations?certificate_pending=1&pan_status=missing|present`.
 
 ## Document settings
 
 Superadmins configure receipt and donation certificate PDFs at `/app/settings/documents`:
 
-- Organization details and logo upload (`api/data/uploads/`)
-- Receipt/certificate wording, visible fields, signature, and print margins
+- Organization details and bundled logo (`api/assets/documents/logo.svg`)
+- Receipt/certificate wording, 80G notes, visible fields, shared signature upload, and print margins
 - Live PDF preview before saving
 
-Receipts are available immediately when a donation is completed. Donation certificates require Accounts Team approval (`POST /api/donations/{id}/approve-certificate`) before download.
+Receipts are available immediately when a donation is completed. Donation certificates require a valid donor PAN and Accounts Team approval (`POST /api/donations/{id}/approve-certificate`) before download.
 
 Online donors receive a public receipt download link on the thank-you screen via `public_receipt_token` returned from payment verification.
 
 ## Security notes
 
 - `.htaccess` blocks direct access to `.env`, `data/`, and schema files on Apache
-- Online donations cannot be edited manually in the admin portal
+- Online donations cannot be edited manually in the admin portal except for donor PAN
 - Razorpay webhooks verify HMAC signatures against the raw request body
 - JWT must use HS256

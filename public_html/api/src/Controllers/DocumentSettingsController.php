@@ -12,7 +12,7 @@ use App\Services\ReceiptPdfService;
 
 class DocumentSettingsController
 {
-    private const ALLOWED_LOGO_TYPES = [
+    private const ALLOWED_IMAGE_TYPES = [
         'image/png' => 'png',
         'image/jpeg' => 'jpg',
         'image/svg+xml' => 'svg',
@@ -68,7 +68,7 @@ class DocumentSettingsController
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file['tmp_name']) ?: '';
-        $extension = self::ALLOWED_LOGO_TYPES[$mime] ?? null;
+        $extension = self::ALLOWED_IMAGE_TYPES[$mime] ?? null;
 
         if ($extension === null) {
             Response::error('Logo must be PNG, JPG, SVG, or WebP', 422);
@@ -85,6 +85,76 @@ class DocumentSettingsController
 
         $saved = $this->settings->saveLogoFilename($filename, (int) $user['id']);
         Response::json(['settings' => $saved, 'logo_filename' => $filename]);
+    }
+
+    public function uploadSignature(Request $request): void
+    {
+        $user = $this->auth->requireUser($request, ['superadmin']);
+
+        if (empty($_FILES['signature']) || !is_array($_FILES['signature'])) {
+            Response::error('Signature image is required', 422);
+            return;
+        }
+
+        $file = $_FILES['signature'];
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            Response::error('Signature upload failed', 422);
+            return;
+        }
+
+        if (($file['size'] ?? 0) > 2 * 1024 * 1024) {
+            Response::error('Signature image must be 2MB or smaller', 422);
+            return;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']) ?: '';
+        $extension = self::ALLOWED_IMAGE_TYPES[$mime] ?? null;
+
+        if ($extension === null) {
+            Response::error('Signature must be PNG, JPG, SVG, or WebP', 422);
+            return;
+        }
+
+        $filename = 'signature-' . bin2hex(random_bytes(8)) . '.' . $extension;
+        $destination = uploadsDir() . '/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            Response::error('Unable to save signature image', 500);
+            return;
+        }
+
+        $saved = $this->settings->saveSignatureFilename($filename, (int) $user['id']);
+        Response::json(['settings' => $saved, 'signature_filename' => $filename]);
+    }
+
+    public function signatureImage(Request $request): void
+    {
+        $this->auth->requireUser($request, ['superadmin']);
+        $filename = $this->settings->signatureFilename();
+
+        if ($filename === null) {
+            Response::error('Signature image not configured', 404);
+            return;
+        }
+
+        $path = uploadsDir() . '/' . $filename;
+        if (!is_readable($path)) {
+            Response::error('Signature image not found', 404);
+            return;
+        }
+
+        $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            default => 'application/octet-stream',
+        };
+
+        header('Content-Type: ' . $mime);
+        header('Cache-Control: private, max-age=300');
+        readfile($path);
     }
 
     public function previewReceipt(Request $request): void

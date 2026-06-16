@@ -21,7 +21,9 @@ export default function DonationDetail() {
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [approving, setApproving] = useState(false)
+  const [savingPan, setSavingPan] = useState(false)
   const [form, setForm] = useState(null)
+  const [panForm, setPanForm] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -45,6 +47,7 @@ export default function DonationDetail() {
           donor_name: detail.donation.donor_name,
           donor_email: detail.donation.donor_email || '',
           donor_phone: detail.donation.donor_phone || '',
+          donor_pan: detail.donation.donor_pan || '',
           amount_inr: detail.donation.amount_inr,
           cause: detail.donation.cause,
           payment_method: detail.donation.payment_method || 'cash',
@@ -52,6 +55,7 @@ export default function DonationDetail() {
           donated_at: toDateInput(detail.donation.donated_at),
           notes: detail.donation.notes || '',
         })
+        setPanForm(detail.donation.donor_pan || '')
       } catch (err) {
         if (!cancelled) setError(err.message)
       }
@@ -64,6 +68,8 @@ export default function DonationDetail() {
   }, [id])
 
   const editable = canWrite && donation?.channel === 'offline'
+  const canEditPan = canWrite && donation?.status === 'completed'
+  const panMissing = donation?.status === 'completed' && !donation?.has_donor_pan
 
   function updateField(field) {
     return (event) => setForm((current) => ({ ...current, [field]: event.target.value }))
@@ -81,6 +87,7 @@ export default function DonationDetail() {
         body: JSON.stringify(form),
       })
       setDonation(result.donation)
+      setPanForm(result.donation.donor_pan || '')
       setMessage('Donation updated successfully.')
     } catch (err) {
       setError(err.message)
@@ -118,6 +125,27 @@ export default function DonationDetail() {
       await openDonationDocument(id, 'certificate', 'html')
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  async function handleSavePan(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    setSavingPan(true)
+
+    try {
+      const result = await api(`/donations/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ donor_pan: panForm }),
+      })
+      setDonation(result.donation)
+      setPanForm(result.donation.donor_pan || '')
+      setMessage('Donor PAN saved.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingPan(false)
     }
   }
 
@@ -198,6 +226,11 @@ export default function DonationDetail() {
             <Badge tone={donation.certificate_status === 'approved' ? 'green' : 'amber'}>
               {donation.certificate_status || 'pending'}
             </Badge>
+            {donation.certificate_status !== 'approved' && (
+              <Badge tone={donation.has_donor_pan ? 'green' : 'red'}>
+                {donation.has_donor_pan ? 'PAN present' : 'PAN missing'}
+              </Badge>
+            )}
             {donation.certificate_number && (
               <span className="text-sm text-slate-600">{donation.certificate_number}</span>
             )}
@@ -224,13 +257,43 @@ export default function DonationDetail() {
               <p className="text-sm text-slate-600">
                 Certificate will be available after Accounts Team approval.
               </p>
+              {panMissing && (
+                <Alert tone="error">
+                  Donor PAN is required before issuing a certificate. Add PAN below, then approve.
+                </Alert>
+              )}
               {canWrite && (
-                <Button onClick={handleApproveCertificate} disabled={approving}>
+                <Button
+                  onClick={handleApproveCertificate}
+                  disabled={approving || panMissing}
+                  title={panMissing ? 'Add donor PAN before approving' : 'Approve certificate'}
+                >
                   {approving ? 'Approving...' : 'Approve for certificate'}
                 </Button>
               )}
             </div>
           )}
+        </Card>
+      )}
+
+      {canEditPan && donation.channel === 'online' && (
+        <Card>
+          <h2 className="mb-3 text-lg font-semibold">Donor PAN</h2>
+          <p className="mb-4 text-sm text-slate-600">
+            Online donations are read-only except for donor PAN, which Accounts can add before certificate approval.
+          </p>
+          <form className="space-y-4" onSubmit={handleSavePan}>
+            <Input
+              label="PAN (optional until certificate approval)"
+              value={panForm}
+              onChange={(event) => setPanForm(event.target.value.toUpperCase())}
+              placeholder="ABCDE1234F"
+              maxLength={10}
+            />
+            <Button type="submit" disabled={savingPan}>
+              {savingPan ? 'Saving...' : 'Save PAN'}
+            </Button>
+          </form>
         </Card>
       )}
 
@@ -245,6 +308,15 @@ export default function DonationDetail() {
               <Input label="Email" type="email" value={form.donor_email} onChange={updateField('donor_email')} />
               <Input label="Phone" value={form.donor_phone} onChange={updateField('donor_phone')} />
             </div>
+            <Input
+              label="PAN (optional)"
+              value={form.donor_pan}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, donor_pan: event.target.value.toUpperCase() }))
+              }
+              placeholder="ABCDE1234F"
+              maxLength={10}
+            />
             <div className="grid gap-4 md:grid-cols-2">
               <Input
                 label="Amount (INR)"
@@ -292,9 +364,16 @@ export default function DonationDetail() {
         <Card>
           <p className="text-sm text-slate-600">
             {donation.channel === 'online'
-              ? 'Online donations are read-only in the admin portal.'
+              ? canWrite
+                ? 'Online donation details are read-only. Use the PAN section above to add donor PAN for certificate approval.'
+                : 'Online donation details are read-only in the admin portal.'
               : 'You have read-only access to this donation.'}
           </p>
+          {donation.donor_pan && (
+            <p className="mt-3 text-sm">
+              <span className="text-slate-500">Donor PAN:</span> {donation.donor_pan}
+            </p>
+          )}
         </Card>
       )}
     </div>

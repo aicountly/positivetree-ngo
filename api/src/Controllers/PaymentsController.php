@@ -57,6 +57,12 @@ class PaymentsController
             return;
         }
 
+        [$donorPan, $panError] = parseOptionalPanInput($body['donor_pan'] ?? null);
+        if ($panError !== null) {
+            Response::error($panError, 422);
+            return;
+        }
+
         $pendingLabel = 'pending-' . bin2hex(random_bytes(8));
         $order = $this->razorpay->createOrder($amountPaise, $pendingLabel, [
             'cause' => $cause,
@@ -67,6 +73,7 @@ class PaymentsController
             'donor_name' => $donorName,
             'donor_email' => $donorEmail,
             'donor_phone' => $body['donor_phone'] ?? null,
+            'donor_pan' => $donorPan,
             'amount_paise' => $amountPaise,
             'channel' => 'online',
             'cause' => $cause,

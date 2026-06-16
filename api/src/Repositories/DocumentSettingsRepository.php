@@ -29,9 +29,9 @@ class DocumentSettingsRepository
         $receipt = json_decode($row['receipt_settings'], true) ?: [];
         $certificate = json_decode($row['certificate_settings'], true) ?: [];
 
-        $organization = array_replace_recursive(
-            $defaults['organization'],
-            $receipt['organization'] ?? $certificate['organization'] ?? []
+        $organization = $this->normalizeOrganization(
+            $receipt['organization'] ?? $certificate['organization'] ?? [],
+            $defaults['organization']
         );
 
         $receiptDoc = $receipt;
@@ -52,9 +52,9 @@ class DocumentSettingsRepository
     public function save(array $payload, ?int $userId): array
     {
         $defaults = require __DIR__ . '/../../config/document_defaults.php';
-        $organization = array_replace_recursive(
-            $defaults['organization'],
-            $payload['organization'] ?? []
+        $organization = $this->normalizeOrganization(
+            $payload['organization'] ?? [],
+            $defaults['organization']
         );
         $receipt = array_replace_recursive(
             $defaults['receipt'],
@@ -88,15 +88,38 @@ class DocumentSettingsRepository
         return $this->get();
     }
 
-    public function saveLogoFilename(string $filename, ?int $userId): array
+    public function saveSignatureFilename(string $filename, ?int $userId): array
     {
         $settings = $this->get();
-        $settings['organization']['logo_filename'] = $filename;
+        $settings['receipt']['signature_filename'] = basename($filename);
+
         return $this->save([
             'organization' => $settings['organization'],
             'receipt' => $settings['receipt'],
             'certificate' => $settings['certificate'],
         ], $userId);
+    }
+
+    public function signatureFilename(): ?string
+    {
+        $settings = $this->get();
+        $filename = $settings['receipt']['signature_filename'] ?? null;
+
+        return $filename ? basename((string) $filename) : null;
+    }
+
+    public function saveLogoFilename(string $filename, ?int $userId): array
+    {
+        return $this->get();
+    }
+
+    /** @param array<string, mixed> $organization */
+    private function normalizeOrganization(array $organization, array $defaults): array
+    {
+        $normalized = array_replace_recursive($defaults, $organization);
+        $normalized['logo_filename'] = $defaults['logo_filename'];
+
+        return $normalized;
     }
 
     /** @param array<string, mixed> $defaults */

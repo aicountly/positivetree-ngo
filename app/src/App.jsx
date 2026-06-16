@@ -7,6 +7,7 @@ import DonationDetail from './pages/DonationDetail'
 import DonationForm from './pages/DonationForm'
 import DonationsList from './pages/DonationsList'
 import Login from './pages/Login'
+import PendingCertificatesList from './pages/PendingCertificatesList'
 import Setup from './pages/Setup'
 import UserForm from './pages/UserForm'
 import UsersList from './pages/UsersList'
@@ -26,6 +27,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="donations" element={<DonationsList />} />
+          <Route path="certificates/pending" element={<PendingCertificatesList />} />
           <Route element={<WriteRoute />}>
             <Route path="donations/new" element={<DonationForm />} />
           </Route>
