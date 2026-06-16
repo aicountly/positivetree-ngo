@@ -1,4 +1,5 @@
 RewriteEngine On
+RewriteBase /api/
 
 # Block direct access to sensitive files
 RewriteRule ^data/ - [F,L]

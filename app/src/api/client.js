@@ -36,7 +36,16 @@ export async function api(path, options = {}) {
 
   const contentType = response.headers.get('content-type') || ''
   const isJson = contentType.includes('application/json')
-  const data = isJson ? await response.json() : null
+  let data = null
+
+  if (isJson) {
+    data = await response.json()
+  } else {
+    const text = await response.text()
+    if (text) {
+      data = { error: text.slice(0, 200) }
+    }
+  }
 
   if (response.status === 401 && token) {
     setToken(null)
@@ -44,7 +53,11 @@ export async function api(path, options = {}) {
   }
 
   if (!response.ok) {
-    const error = new Error(data?.error || 'Request failed')
+    const fallback =
+      response.status === 500
+        ? 'Server error (500). The API may be missing Composer dependencies or PHP SQLite support.'
+        : 'Request failed'
+    const error = new Error(data?.error || fallback)
     error.status = response.status
     error.data = data
     throw error

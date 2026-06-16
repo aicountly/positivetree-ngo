@@ -31,9 +31,17 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: sqlite3, pdo_sqlite
+          tools: composer
+
       - name: Install and build site
         run: |
           npm run build:marketing
+          npm run copy:api
           npm ci --prefix app
           npm run build --prefix app
 

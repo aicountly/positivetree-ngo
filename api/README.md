@@ -45,18 +45,30 @@ CORS_ORIGIN=http://localhost:5173
 
 ## Production (cPanel)
 
-1. Deploy via rsync (`public_html/` includes `api/` after `npm run copy:api`)
-2. On the server, create `public_html/api/.env` with production secrets
-3. Ensure `public_html/api/data/` is writable by PHP:
+1. Deploy via rsync — CI runs `npm run copy:api` so `public_html/api/vendor/` is included
+2. On the server, create `public_html/api/.env` from `api/.env.example`
+3. Set `CORS_ORIGIN` to your live site origin (e.g. `https://aicountly.co.in`)
+4. Ensure `public_html/api/data/` is writable by PHP:
    ```bash
-   chmod 750 public_html/api/data
+   mkdir -p public_html/api/data
+   chmod 775 public_html/api/data
    ```
-4. Visit `https://positivetree.ngo/app/setup` once to create the superadmin
-5. Configure Razorpay webhook:
-   - URL: `https://positivetree.ngo/api/webhooks/razorpay`
-   - Events: `payment.captured`, `payment.failed`
+5. Visit `https://your-domain/app/setup` once to create the superadmin
 
-**Note:** rsync excludes `.env`, and `npm run copy:api` preserves existing `public_html/api/.env` and SQLite files.
+### Troubleshooting HTTP 500 on `/api/setup/status`
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Empty 500 response | Missing `vendor/` (Composer deps) | Run `npm run copy:api` locally, or on server: `cd public_html/api && composer install --no-dev` |
+| JSON: data directory not writable | SQLite permissions | `chmod 775 public_html/api/data` |
+| JSON: PDO SQLite not enabled | PHP extension missing | Enable `pdo_sqlite` in cPanel → Select PHP Version → Extensions |
+
+Quick check after deploy:
+
+```bash
+curl -s https://your-domain/api/setup/status
+# Expected: {"setup_required":true} or {"setup_required":false}
+```
 
 ## API endpoints
 

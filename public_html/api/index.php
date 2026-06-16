@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+if (PHP_VERSION_ID < 80100) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'PHP 8.1 or newer is required']);
+    exit;
+}
+
 require __DIR__ . '/bootstrap.php';
 
 use App\Controllers\AuthController;
@@ -80,5 +87,6 @@ try {
     $message = config('APP_ENV') === 'production'
         ? 'Internal server error'
         : $e->getMessage();
+    error_log('[donation-api] ' . $e->getMessage());
     Response::error($message, 500);
 }

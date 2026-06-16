@@ -2,7 +2,17 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/vendor/autoload.php';
+$autoload = __DIR__ . '/vendor/autoload.php';
+if (!is_readable($autoload)) {
+    http_response_code(503);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => 'API dependencies are not installed. Run composer install in the api directory.',
+    ]);
+    exit;
+}
+
+require_once $autoload;
 
 function loadEnv(string $path): void
 {

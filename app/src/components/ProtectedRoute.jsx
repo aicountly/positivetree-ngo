@@ -13,8 +13,14 @@ function LoadingScreen() {
 function InitErrorScreen({ message }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-      <div className="max-w-md">
+      <div className="max-w-md space-y-3">
         <Alert tone="error">{message || 'Unable to connect to the API.'}</Alert>
+        <p className="text-sm text-slate-600">
+          The server returned an error for <code className="rounded bg-slate-200 px-1">/api/setup/status</code>.
+          On cPanel, run <code className="rounded bg-slate-200 px-1">composer install --no-dev</code> inside{' '}
+          <code className="rounded bg-slate-200 px-1">public_html/api</code> and ensure{' '}
+          <code className="rounded bg-slate-200 px-1">api/data/</code> is writable.
+        </p>
       </div>
     </div>
   )
