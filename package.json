@@ -4,6 +4,10 @@
   "scripts": {
     "dev:app": "npm run dev --prefix app",
     "build:app": "npm run build --prefix app",
-    "preview:app": "npm run preview --prefix app"
+    "preview:app": "npm run preview --prefix app",
+    "extract:content": "node marketing/extract-content.mjs",
+    "download:images": "node marketing/download-images.mjs",
+    "build:marketing": "node marketing/build.mjs",
+    "build": "npm run build:marketing && npm run build:app"
   }
 }

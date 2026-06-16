@@ -1,0 +1,342 @@
+{
+  "pages": [
+    {
+      "id": 2,
+      "title": "Sample Page",
+      "slug": "sample-page",
+      "html": "<p>This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation (in most themes). Most people start with an About page that introduces them to potential site visitors. It might say something like this:</p>\n\n\n\n<blockquote class=\\\"wp-block-quote\\\"><p>Hi there! I'm a bike messenger by day, aspiring actor by night, and this is my website. I live in Los Angeles, have a great dog named Jack, and I like pi&#241;a coladas. (And gettin' caught in the rain.)</p></blockquote>\n\n\n\n<p>...or something like this:</p>\n\n\n\n<blockquote class=\\\"wp-block-quote\\\"><p>The XYZ Doohickey Company was founded in 1971, and has been providing quality doohickeys to the public ever since. Located in Gotham City, XYZ employs over 2,000 people and does all kinds of awesome things for the Gotham community.</p></blockquote>\n\n\n\n<p>As a new WordPress user, you should go to <a href=\\\"https://positivetree.ngo/wp-admin/\\\">your dashboard</a> to delete this page and create new pages for your content. Have fun!</p>",
+      "plainText": "This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation (in most themes). Most people start with an About page that introduces them to potential site visitors. It might say something like this: Hi there! I'm a bike messenger by day, aspiring actor by night, and this is my website. I live in Los Angeles, have a great dog named Jack, and I like pi&#241;a coladas. (And gettin' caught in the rain.) ...or something like this: The XYZ Doohickey Company was founded in 1971, and has been providing quality doohickeys to the public ever since. Located in Gotham City, XYZ employs over 2,000 people and does all kinds of awesome things for the Gotham community. As a new WordPress user, you should go to your dashboard to delete this page and create new pages for your content. Have fun!"
+    },
+    {
+      "id": 8,
+      "title": "Home",
+      "slug": "home",
+      "html": "Share your love to make someone’s life betterA place where comfort, care, and community come together<a href=\\\"https://positivetree.ngo/wp-payment/service.php\\\">DONATE NOW</a>Donate a little charity to make their life betterA homely atmosphere that encourages a sense of community and belonging.<a href=\\\"https://positivetree.ngo/wp-payment/service.php\\\">DONATE NOW</a>\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPrevious slide\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNext slide\n\t\t\t<link rel=\\\"stylesheet\\\" href=\\\"https://positivetree.ngo/wp-content/plugins/elementor-pro/assets/css/widget-call-to-action.min.css\\\">\t\t<a data-e-bg-lazyload=\\\".elementor-bg\\\" href=\\\"https://positivetree.ngo/category/programs-for-children/\\\">\n\t\t\t\t<h4>Programs for Children </h4>\n\t\t\t\t\t\tChildren are the world’s most valuable resource and its best hope for the future.\t\t\t\t\t\n\t\t\t\t\t\t</a>\n\t\t\t\t\t<a data-e-bg-lazyload=\\\".elementor-bg\\\" href=\\\"https://positivetree.ngo/category/programs-for-elderly/\\\">\n\t\t\t\t<h5>Programs for Elders</h5>\n\t\t\t\t\t\tOld age is not a time to wither, but a time to bloom with grace, resilience, and wisdom\t\t\t\t\t\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h5>About Positive Foundation</h5>\t\t\n\t\t\t<h1>When Ambition Meets Opportunity Everything is To Be Possible In All</h1>\t\t\n\t\t<p>Positive Tree Foundation is a community that believes in providing a safe, comfortable, and nurturing environment for seniors and children who have experienced adverse life circumstances. We built invaluable, in-depth, and long-lasting connections with everyone that becomes a part of our community, as we believe that everyone deserves to feel valued and cared for, regardless of age or background.</p><p>Our team members are caring and experienced experts dedicated to satisfying our residents' physical, emotional, and spiritual needs.</p>\t\t\n\t\t\t<a href=\\\"https://positivetree.ngo//wp-payment/service.php\\\">\n\t\t\t\t\t\t\t\t\tDONATE NOW\n\t\t\t\t\t</a>\n\t\t\t<a href=\\\"https://positivetree.ngo/about-foundation/\\\">\n\t\t\t\t\t\t\t\t\tLEARN MORE\n\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"702\\\" height=\\\"691\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png\\\" alt=\\\"\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png 702w, https://positivetree.ngo/wp-content/uploads/2023/07/about-300x295.png 300w\\\" sizes=\\\"(max-width: 702px) 100vw, 702px\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<figure><img width=\\\"150\\\" height=\\\"110\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/feature-v1.png\\\" alt=\\\"\\\" /></figure><h4>Get Involved & inspire</h4><p>Donate a little charity to fulfill their needs & dreams.</p>\t\t\n\t\t\t<figure><img width=\\\"150\\\" height=\\\"110\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/feature-v2.png\\\" alt=\\\"\\\" /></figure><h4>Donate and Help</h4><p>Offer them healthcare, scholarships, food services, and more.</p>\t\t\n\t\t\t<figure><img width=\\\"150\\\" height=\\\"110\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/feature-v3.png\\\" alt=\\\"\\\" /></figure><h4>Become a Volunteer</h4><p>Join our hands to provide them a better life style.</p>\t\t\n\t\t\t<h5>Our Process</h5>\t\t\n\t\t\t<h2>Nonprofit Organization Development Workflow </h2>\t\t\n\t\t\t<link rel=\\\"stylesheet\\\" href=\\\"https://positivetree.ngo/wp-content/plugins/elementor/assets/css/widget-icon-list.min.css\\\">\t\t<ul>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tOur Mission and Vision\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tOur Strategic Planning\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tFundraising and Resource Development\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tProject Planning and Design\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tPartnerships and Collaboration\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tImplementation and Execution\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tReporting and Accountability\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tLearning and Continuous Improvement\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tCommunication and Public Relations\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tGovernance and Leadership\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"59\\\" height=\\\"65\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape2.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h5>Our Programs</h5>\t\t\n\t\t\t<h2>When Ambition Meets Opportunity Everything is To Be Possible In All</h2>\t\t\n\t\t\t<a href=\\\"https://positivetree.ngo/category/programs-for-children/\\\">\n\t\t\t\t\t\t\t\t\tPROGRAMS FOR CHILDREN\n\t\t\t\t\t</a>\n\t\t\t<a href=\\\"https://positivetree.ngo/category/programs-for-elderly/\\\">\n\t\t\t\t\t\t\t\t\tPROGRAMS FOR ELDERS\n\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"60\\\" height=\\\"60\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/camp2.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\tTotal campaign\t\t\t\n\t\t\t\t0\n\t\t\t\t+\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"60\\\" height=\\\"60\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/camp4.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\tFund raised\t\t\t\n\t\t\t\t0\n\t\t\t\t+\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"60\\\" height=\\\"60\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/camp.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\tHappy Volunteers\t\t\t\n\t\t\t\t0\n\t\t\t\t+\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"60\\\" height=\\\"60\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/camp1.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\tSatisfied donors\t\t\t\n\t\t\t\t0\n\t\t\t\t+\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h6>A Secure Place for Helpless People</h6>\t\t\n\t\t\t<h1>Where comfort, care, and community come together</h1>\t\t\n\t\t\t<a href=\\\"https://positivetree.ngo//wp-payment/service.php\\\">\n\t\t\t\t\t\t\t\t\tDONATE NOW\n\t\t\t\t\t</a>\n\t\t\t<a href=\\\"https://positivetree.ngo/contact/\\\">\n\t\t\t\t\t\t\t\t\tBECOME A VOLUNTEER\n\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"59\\\" height=\\\"65\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape2.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h5>Latest Events</h5>\t\t\n\t\t\t<h2>\\\"Old age is not a time to wither, but a time to bloom with grace, resilience, and wisdom.\\\"</h2>",
+      "plainText": "Share your love to make someone’s life betterA place where comfort, care, and community come together DONATE NOW Donate a little charity to make their life betterA homely atmosphere that encourages a sense of community and belonging. DONATE NOW Previous slide Next slide Programs for Children Children are the world’s most valuable resource and its best hope for the future. Programs for Elders Old age is not a time to wither, but a time to bloom with grace, resilience, and wisdom About Positive Foundation When Ambition Meets Opportunity Everything is To Be Possible In All Positive Tree Foundation is a community that believes in providing a safe, comfortable, and nurturing environment for seniors and children who have experienced adverse life circumstances. We built invaluable, in-depth, and long-lasting connections with everyone that becomes a part of our community, as we believe that everyone deserves to feel valued and cared for, regardless of age or background. Our team members are caring and experienced experts dedicated to satisfying our residents' physical, emotional, and spiritual needs. DONATE NOW LEARN MORE Get Involved & inspire Donate a little charity to fulfill their needs & dreams. Donate and Help Offer them healthcare, scholarships, food services, and more. Become a Volunteer Join our hands to provide them a better life style. Our Process Nonprofit Organization Development Workflow Our Mission and Vision Our Strategic Planning Fundraising and Resource Development Project Planning and Design Partnerships and Collaboration Implementation and Execution Reporting and Accountability Learning and Continuous Improvement Communication and Public Relations Governance and Leadership Our Programs When Ambition Meets Opportunity Everything is To Be Possible In All PROGRAMS FOR CHILDREN PROGRAMS FOR ELDERS Total campaign 0 + Fund raised 0 + Happy Volunteers 0 + Satisfied donors 0 + A Secure Place for Helpless People Where comfort, care, and community come together DONATE NOW BECOME A VOLUNTEER Latest Events \\\"Old age is not a time to wither, but a time to bloom with grace, resilience, and wisdom.\\\""
+    },
+    {
+      "id": 463,
+      "title": "Contact",
+      "slug": "contact",
+      "html": "<link rel=\\\"stylesheet\\\" href=\\\"https://positivetree.ngo/wp-content/plugins/elementor/assets/css/widget-icon-box.min.css\\\">\t\t\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\tAddress\t\t\t\t\t\t\n\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\tPlot No. 54, Sri Kanchi Nagar, Extension II Chinnaiyankulam, Orikkai, Kancheepuram, Kanchipuram – 631502, Tamil Nadu\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\tContact\t\t\t\t\t\t\n\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t+916384184900\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\tEmail\t\t\t\t\t\t\n\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t<a href=\\\"mailto:info@positivetreefoundation.in\\\">info@positivetree.ngo</a>\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"59\\\" height=\\\"65\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape2.png\\\" alt=\\\"\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"400\\\" height=\\\"400\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/ngo.jpg\\\" alt=\\\"\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/ngo.jpg 400w, https://positivetree.ngo/wp-content/uploads/2024/01/ngo-300x300.jpg 300w, https://positivetree.ngo/wp-content/uploads/2024/01/ngo-150x150.jpg 150w\\\" sizes=\\\"(max-width: 400px) 100vw, 400px\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h4>Quick Feedback Form</h4>",
+      "plainText": "Address Plot No. 54, Sri Kanchi Nagar, Extension II Chinnaiyankulam, Orikkai, Kancheepuram, Kanchipuram – 631502, Tamil Nadu Contact +916384184900 Email info@positivetree.ngo Quick Feedback Form"
+    },
+    {
+      "id": 619,
+      "title": "About Founder",
+      "slug": "about-us",
+      "html": "<img width=\\\"702\\\" height=\\\"691\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png 702w, https://positivetree.ngo/wp-content/uploads/2023/07/about-300x295.png 300w\\\" sizes=\\\"(max-width: 702px) 100vw, 702px\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h5>About Bharath Raghavan</h5>\t\t\n\t\t\t<h1>Founder of Supporting Old Age Homes & Orphanages</h1>\t\t\n\t\t<p>My name is Bharath Raghavan, and I am the founder of the Positive Tree Foundation. This entire journey of being a founder started with just one intention: supporting old age homes and orphanages to make them their superheroes. I feel that every person has the power to lead a life of success and can channel their energy into self-growth. So with my 18 years of analysis, I learned that education, positivity, and moral support could help them succeed. So I dreamed of building a High vibe community around India to lead the way to NGO development. Rather than focusing on collecting funds and donating, we are building a positive community for all kids to survive on their own. Whatever it takes for them to be independent (as much as possible), we are building the next generation of kids who can rule the world.</p>",
+      "plainText": "About Bharath Raghavan Founder of Supporting Old Age Homes & Orphanages My name is Bharath Raghavan, and I am the founder of the Positive Tree Foundation. This entire journey of being a founder started with just one intention: supporting old age homes and orphanages to make them their superheroes. I feel that every person has the power to lead a life of success and can channel their energy into self-growth. So with my 18 years of analysis, I learned that education, positivity, and moral support could help them succeed. So I dreamed of building a High vibe community around India to lead the way to NGO development. Rather than focusing on collecting funds and donating, we are building a positive community for all kids to survive on their own. Whatever it takes for them to be independent (as much as possible), we are building the next generation of kids who can rule the world."
+    },
+    {
+      "id": 702,
+      "title": "About Foundation",
+      "slug": "about-foundation",
+      "html": "<h5>Foundation Overview</h5>\t\t\n\t\t\t<h1>Empowering Futures, Building Foundations</h1>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"702\\\" height=\\\"691\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/about.png 702w, https://positivetree.ngo/wp-content/uploads/2023/07/about-300x295.png 300w\\\" sizes=\\\"(max-width: 702px) 100vw, 702px\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h3>Our Community</h3>\t\t\n\t\t<p>Positive Tree Foundation is a community that believes in providing a safe, comfortable, and nurturing environment for seniors and children who have experienced adverse life circumstances. We built invaluable, in-depth, and long-lasting connections with everyone that becomes a part of our community, as we believe that everyone deserves to feel valued and cared for, regardless of age or background.</p>\t\t\n\t\t\t<h3>Our Team</h3>\t\t\n\t\t<p>Our team members are caring and experienced experts dedicated to satisfying our residents' physical, emotional, and spiritual needs. We try tirelessly to create a homely atmosphere that encourages a sense of community and belonging. Our foundation provides invaluable services - Education, positivity, moral support, and care to people of all age groups regardless of gender, race, or ethnicity.</p>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"128\\\" height=\\\"128\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/vision.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h3>Our Mission</h3>\t\t\n\t\t<p><strong>\\\"Changing lives, one heart at a time: Our mission is to make an exponential difference in the lives of individuals, providing hope and resilience.\\\"<br /><br /></strong>Our mission at Positive Tree Foundation is to positively change the lives of those we serve through personalized care, respect, and a deep understanding of their unique needs. We aim to ensure our residents can access the resources, services, and care they need to live enriching and fulfilling lives. We are dedicated to upholding our values of compassion, respect, and excellence in everything we do. We want our residents to maintain their independence and the support and care they need to excel. To fulfill this mission, we have developed healthcare programs, scholarships, food services, and more.</p>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img width=\\\"128\\\" height=\\\"128\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/mission.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h3>Our Vision</h3>\t\t\n\t\t<p><strong>\\\"Supporting People, transforming lives: Our vision is to create a space where every individual can thrive, regardless of their circumstances.\\\"<br /><br /></strong>Our vision at Positive Tree Foundation is to be a leading provider of people-oriented care for seniors and children in need. We aim to expand our foundation to various cities across India to stretch our warmth and compassion and to provide our shoulders to all the people in need, irrespective of age, gender, religion, or caste, who can feel at home and supported in all aspects of their lives.</p>",
+      "plainText": "Foundation Overview Empowering Futures, Building Foundations Our Community Positive Tree Foundation is a community that believes in providing a safe, comfortable, and nurturing environment for seniors and children who have experienced adverse life circumstances. We built invaluable, in-depth, and long-lasting connections with everyone that becomes a part of our community, as we believe that everyone deserves to feel valued and cared for, regardless of age or background. Our Team Our team members are caring and experienced experts dedicated to satisfying our residents' physical, emotional, and spiritual needs. We try tirelessly to create a homely atmosphere that encourages a sense of community and belonging. Our foundation provides invaluable services - Education, positivity, moral support, and care to people of all age groups regardless of gender, race, or ethnicity. Our Mission \\\"Changing lives, one heart at a time: Our mission is to make an exponential difference in the lives of individuals, providing hope and resilience.\\\" Our mission at Positive Tree Foundation is to positively change the lives of those we serve through personalized care, respect, and a deep understanding of their unique needs. We aim to ensure our residents can access the resources, services, and care they need to live enriching and fulfilling lives. We are dedicated to upholding our values of compassion, respect, and excellence in everything we do. We want our residents to maintain their independence and the support and care they need to excel. To fulfill this mission, we have developed healthcare programs, scholarships, food services, and more. Our Vision \\\"Supporting People, transforming lives: Our vision is to create a space where every individual can thrive, regardless of their circumstances.\\\" Our vision at Positive Tree Foundation is to be a leading provider of people-oriented care for seniors and children in need. We aim to expand our foundation to various cities across India to stretch our warmth and compassion and to provide our shoulders to all the people in need, irrespective of age, gender, religion, or caste, who can feel at home and supported in all aspects of their lives."
+    },
+    {
+      "id": 815,
+      "title": "News & Events",
+      "slug": "news-events",
+      "html": "",
+      "plainText": ""
+    },
+    {
+      "id": 817,
+      "title": "Donation",
+      "slug": "donation",
+      "html": "<img width=\\\"118\\\" height=\\\"70\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2023/07/shape1.png\\\" alt=\\\"\\\" loading=\\\"lazy\\\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t<h5>Donate Now</h5>\t\t\n\t\t\t<h1>Every contribution can change a life - whether it big or small .</h1>\t\t\n\t\t<form style=\\\"text-align:center\\\"> </form>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href=\\\"https://rzp.io/l/hywgi79r\\\" target=\\\"_blank\\\" rel=\\\"noopener\\\">\n\t\t\t\t\t\t\t<img width=\\\"800\\\" height=\\\"300\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/other-donations.jpg\\\" alt=\\\"\\\" loading=\\\"lazy\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/other-donations.jpg 800w, https://positivetree.ngo/wp-content/uploads/2024/01/other-donations-300x113.jpg 300w, https://positivetree.ngo/wp-content/uploads/2024/01/other-donations-768x288.jpg 768w\\\" sizes=\\\"(max-width: 800px) 100vw, 800px\\\" />\t\t\t\t\t\t\t\t</a>\n\t\t\t<h6>Welcome to Positive Tree Foundation - Transforming Lives Through Compassionate Programs .</h6>\t\t\n\t\t\t<link rel=\\\"stylesheet\\\" href=\\\"https://positivetree.ngo/wp-content/plugins/elementor/assets/css/widget-icon-list.min.css\\\">\t\t<ul>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tPrograms for Children:\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tPrograms for the Elderly:\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\tOther Compassionate Programs:\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t<a href=\\\"https://rzp.io/l/hywgi79r\\\" target=\\\"_blank\\\" rel=\\\"noopener\\\">\n\t\t\t\t\t\tOther Donations\n\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href=\\\"https://rzp.io/l/JbYdXAr\\\" target=\\\"_blank\\\" rel=\\\"noopener\\\">\n\t\t\t\t\t\t\t<img width=\\\"800\\\" height=\\\"300\\\" src=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/other-donation.jpg\\\" alt=\\\"\\\" loading=\\\"lazy\\\" srcset=\\\"https://positivetree.ngo/wp-content/uploads/2024/01/other-donation.jpg 800w, https://positivetree.ngo/wp-content/uploads/2024/01/other-donation-300x113.jpg 300w, https://positivetree.ngo/wp-content/uploads/2024/01/other-donation-768x288.jpg 768w\\\" sizes=\\\"(max-width: 800px) 100vw, 800px\\\" />\t\t\t\t\t\t\t\t</a>\n\t\t\t<h6>Shelter Home Fund Donation</h6>\t\t\n\t\t<p>Your support is crucial for the preservation and enhancement of our sacred space. Contribute to the upkeep and community initiatives with a one-time donation or monthly pledge. Every contribution, big or small, matters.</p>\t\t\n\t\t\t<a href=\\\"https://rzp.io/l/JbYdXAr\\\" target=\\\"_blank\\\" rel=\\\"noopener\\\">\n\t\t\t\t\t\tShelter Fund Donations\n\t\t\t\t\t</a>",
+      "plainText": "Donate Now Every contribution can change a life - whether it big or small . Welcome to Positive Tree Foundation - Transforming Lives Through Compassionate Programs . Programs for Children: Programs for the Elderly: Other Compassionate Programs: Other Donations Shelter Home Fund Donation Your support is crucial for the preservation and enhancement of our sacred space. Contribute to the upkeep and community initiatives with a one-time donation or monthly pledge. Every contribution, big or small, matters. Shelter Fund Donations"
+    },
+    {
+      "id": 864,
+      "title": "Virtual Walkthrough",
+      "slug": "gallery",
+      "html": "<iframe src=\\\"https://drive.google.com/embeddedfolderview?id=1fXXygfV0GQoAUrdmzGk9frAwBB7XeyLR#grid\\\" width=\\\"100%\\\" height=\\\"500\\\" frameborder=\\\"0\\\" style=\\\"font-size:0px;\\\"></iframe>",
+      "plainText": ""
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "title": "Identify the student under the poverty line  providing the scholarship.",
+      "slug": "identify-the-student-under-the-poverty-line-providing-the-scholarship",
+      "date": "2023-07-10 06:49:27",
+      "excerpt": "",
+      "html": "<p><strong>Identify the student under the poverty line and make them successful by providing the scholarship.</strong></p>\n\n\n\n<p>Our dedication to finding and supporting kids from disadvantaged families through scholarships is motivated by our aim of providing equal opportunity for all children, regardless of socioeconomic position, differently abled children, and street children. We aim to bridge the gap by giving financial aid for tuition, school supplies, uniforms, transportation, and other necessary educational expenses, mentorship, guidance, and tools to assist students in overcoming obstacles and achieving academic success.</p>\n\n\n\n<p>Our other programs include-</p>\n\n\n\n<p>Adopting kids, reaching slum areas, and teaching children and other social activities</p>",
+      "categories": [
+        {
+          "name": "Programs for children",
+          "slug": "programs-for-children"
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "title": "Vision for quality care for children with physical and mental handicaps.",
+      "slug": "distribut-healthy-food-and-essentials-for-poor-categories",
+      "date": "2023-07-11 05:28:12",
+      "excerpt": "",
+      "html": "<p>We launched Quality Care for Children with Physical and mental disabilities Program to promote a compassionate and inclusive atmosphere in which every child feels loved, encouraged, and empowered to achieve their full potential. Through this, we provide comprehensive and holistic care and support their physical, cognitive, emotional, and social development through personalized care plans, specialized therapies, and educational initiatives.</p>",
+      "categories": [
+        {
+          "name": "Programs for children",
+          "slug": "programs-for-children"
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "title": "Special Education Scholarship",
+      "slug": "free-educational-facilities-for-needy-and-poor-children",
+      "date": "2023-07-11 05:28:49",
+      "excerpt": "",
+      "html": "<p>Our exceptional Education Scholarship program is meant to give students with special needs financial assistance and educational possibilities. Our program offers scholarships for one year for one student. Through these scholarships, we aim to empower students with special needs and their families by reducing the financial burden associated with specialized education through our scholarship program. We provide financing for tuition, educational resources, and other essential aids.</p>",
+      "categories": [
+        {
+          "name": "Programs for children",
+          "slug": "programs-for-children"
+        }
+      ]
+    },
+    {
+      "id": 291,
+      "title": "Elderly Support for Physically Challenged People",
+      "slug": "elderly-support-for-physically-challenged-people",
+      "date": "2023-07-11 11:50:45",
+      "excerpt": "",
+      "html": "<p>Our organization is dedicated to supporting elderly individuals who face physical challenges. We recognize the unique needs and vulnerabilities of physically challenged seniors and are committed to ensuring their well-being and independence. Our elderly support program addresses individuals' specific physical challenges as they age. We work closely with healthcare professionals, therapists to provide specialized care and assistance tailored to each individual's needs. We also provide access to mobility aids such as wheelchairs, walkers, and canes to assist with mobility and ensure their safety.</p>",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 297,
+      "title": "Engages with old folks and understands their needs and problems",
+      "slug": "engages-with-old-folks-and-understands-their-needs-and-problems",
+      "date": "2023-07-11 11:53:53",
+      "excerpt": "",
+      "html": "<p>We emphasize engaging with older people and understanding their needs and challenges. Each person has a unique journey to share, so we provide a supportive environment where their views are heard and their well-being is prioritized by actively engaging with them. Our interactions are beyond the surface level, so we provide our best to nurture relationships and promote social connections. We encourage social activities, group discussions, and community events that unite older adults, fostering a sense of belonging and combating feelings of isolation.\\\"</p>",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 299,
+      "title": "Targeting health needs of older adults with disability &amp; halfway-minded people",
+      "slug": "targeting-health-needs-of-older-adults-with-disability-halfway-minded-people",
+      "date": "2023-07-11 11:58:24",
+      "excerpt": "",
+      "html": "<p>Engaging with older people requires knowing their needs and issues, cultivating relationships, and promoting social connections. We believe in prioritizing accessibility and mobility for older people with disabilities. We ensure that our facilities and services are adapted to meet their unique needs, including ramps, handrails, and assistive equipment. In the case of halfway-minded individuals, we understand the importance of creating a supportive and nurturing environment by promoting cognitive stimulation activities, therapeutic interventions, and companionship to promote social engagement and cognitive function.</p>\n\n\n\n<p>When it comes to Senior citizens, we also ensure the following-</p>\n\n\n\n<p>1) A respectful and comfortable life for old people</p>\n\n\n\n<p>2) Wheelchair access and regular Medicine support for Senior Citizens.</p>\n\n\n\n<p>3)Every Day Free Food Service to Elderly, Physically-Challenged, and Homeless People.</p>\n\n\n\n<p>Other programs</p>",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 369,
+      "title": "Eye care examinations camps",
+      "slug": "eye-care-examinations-camps",
+      "date": "2023-07-13 12:37:58",
+      "excerpt": "",
+      "html": "<p>Our organization is dedicated to serving visually impaired people by providing the best and highest quality eye care services. Our objective is to ensure that people with vision impairments receive care, allowing them to improve their eyesight. We provide eye examinations, vision evaluations, treatment of eye problems, and more.</p>\r\n<ul></ul>",
+      "categories": [
+        {
+          "name": "Events",
+          "slug": "events"
+        }
+      ]
+    },
+    {
+      "id": 372,
+      "title": "Children Education Scholarship program",
+      "slug": "children-education-scholarship-program",
+      "date": "2023-07-13 12:38:44",
+      "excerpt": "",
+      "html": "<p></p>\r\n<p>Our exceptional Education Scholarship program is meant to give students with special needs financial assistance and educational possibilities. Our program offers scholarships for one year for one student. Through these scholarships, we aim to empower students with special needs and their families by reducing the financial burden associated with specialized education through our scholarship program. We provide financing for tuition, educational resources, and other essential aids.</p>\r\n<ul></ul>",
+      "categories": [
+        {
+          "name": "Events",
+          "slug": "events"
+        }
+      ]
+    },
+    {
+      "id": 374,
+      "title": "Distribution of Medicines and Daily Essentials",
+      "slug": "distribution-of-medicines-and-daily-essentials",
+      "date": "2023-07-13 12:42:57",
+      "excerpt": "",
+      "html": "We aim to provide health checkups to the people under the poverty line. We know how much we all want our loved ones to be healthy and perfectly fine, but sometimes, we cannot care for them due to high healthcare costs. To solve this problem, we have made essential medicines accessible to impoverished people at affordable\r\n\r\nprices. We aim to ensure that everyone, regardless of socioeconomic status, has access to quality medical care, preventive screenings, and required medications to maintain their health and well-being.",
+      "categories": [
+        {
+          "name": "Events",
+          "slug": "events"
+        }
+      ]
+    },
+    {
+      "id": 589,
+      "title": "Donate for Food on Special Occasions",
+      "slug": "donate-for-food-on-special-occasions",
+      "date": "2024-01-05 05:32:46",
+      "excerpt": "",
+      "html": "<strong>\\\"Donate for Food at Special Occasions\\\"</strong> is a meaningful initiative to address hunger and food insecurity during special occasions. Many individuals and families struggle to access nutritious meals, especially during festive times or significant events. Our mission is to provide support and ensure that everyone can enjoy the joy and nourishment of food during these occasions. Through this initiative, we encourage individuals, families, and communities to come together and make a difference by donating food or contributing funds towards providing meals to those in need.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 592,
+      "title": "Food For Poor and Needy people",
+      "slug": "food-for-poor-and-needy-people",
+      "date": "2024-01-05 05:33:48",
+      "excerpt": "",
+      "html": "<h5>\\\"Hunger is not a problem. It is an obscenity. How wonderful it is that nobody needs to wait a single moment before starting to improve the world.\\\"</h5>\r\n<h5>— Anne Frank</h5>\r\nOur organization is dedicated to providing food for the poor and needy in our community, ensuring that no one goes hungry.\\\" We aim to eliminate hunger, promote nutrition, and restore hope by providing for those experiencing food insecurity. Our team members also strive to donate food on special occasions so people can share happiness and joy.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 595,
+      "title": "Identify the Physically Challenged People to offer other necessary support",
+      "slug": "identify-the-physically-challenged-people-to-offer-other-necessary-support",
+      "date": "2024-01-05 05:34:22",
+      "excerpt": "",
+      "html": "We are dedicated to identifying physically challenged individuals and providing them with the assistance they require to improve their quality of life. Through our activities, which include giving daycare and Primary Health care support to people with disabilities, we strive to engage with people who need help, such as those with mobility issues, sensory impairments, chronic illnesses, or other physical obstacles. We aim to ensure that every person with a physical disability gets the help they need to overcome obstacles, achieve their goals, and thrive in all parts of life.\\\" In addition",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 599,
+      "title": "Empowerment in society of disabled people to create a meaningful life for themselves",
+      "slug": "empowerment-in-society-of-disabled-people-to-create-a-meaningful-life-for-themselves",
+      "date": "2024-01-05 05:36:01",
+      "excerpt": "",
+      "html": "At our organization, we are committed to empowering disabled people in society by assisting them in living meaningful lives filled with purpose, independence, and fulfillments. We believe in empowering people by providing chances for personal and skill development. We seek to improve their confidence, self-esteem, and decision-making abilities through personalized programs and tools, allowing them to define their own life actively.\\\"",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 602,
+      "title": "Health Checkup for Poverty People with Medicine",
+      "slug": "health-checkup-for-poverty-people-with-medicine",
+      "date": "2024-01-05 05:37:25",
+      "excerpt": "",
+      "html": "We aim to provide health checkups to the people under the poverty line. We know how much we all want our loved ones to be healthy and perfectly fine, but sometimes, we cannot care for them due to high healthcare costs. To solve this problem, we have made essential medicines accessible to impoverished people at affordable\r\n\r\nprices. We aim to ensure that everyone, regardless of socioeconomic status, has access to quality medical care, preventive screenings, and required medications to maintain their health and well-being.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 605,
+      "title": "Free Healthcare services with full Checkup",
+      "slug": "free-healthcare-services-with-full-checkup",
+      "date": "2024-01-05 05:39:54",
+      "excerpt": "",
+      "html": "We aim to provide free health care services with full checkups to individuals who cannot afford or access medical care. Our mission is to ensure everyone can access healthcare and preventive services regardless of financial circumstances. We strive to remove the high-cost barrier of healthcare treatment by offering free healthcare services that encompass a complete checkup, including medical examinations, laboratory tests, and consultations with healthcare professionals.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 608,
+      "title": "Fulfilling health and social needs of groups like elderly and local communities",
+      "slug": "fulfilling-health-and-social-needs-of-groups-like-elderly-and-local-communities",
+      "date": "2024-01-05 05:44:38",
+      "excerpt": "",
+      "html": "Positive Tree Foundation is deeply committed to fulfilling the health and social needs of groups such as the elderly and local communities. We sincerely want to create a supportive environment where individuals of all ages can thrive, promoting their overall well-being and a sense of belonging and connection. We understand that the elderly and local communities often struggle to access cheaper healthcare, social support, and other essential services. Therefore, we strive to address these needs ensuring that individuals receive the care, resources, and assistance necessary to lead fulfilling lives.\\\"",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 612,
+      "title": "Health camps for diagnostics and general Checkup",
+      "slug": "health-camps-for-diagnostics-and-general-checkup",
+      "date": "2024-01-05 05:45:38",
+      "excerpt": "",
+      "html": "<h5>Health camps for diagnostics and general Checkup of Community/targeted groups with Medicines</h5>\r\nWe serve the community and targeted groups by providing access to essential medicines. Our mission is to ensure that individuals who require medication receive the necessary support. We strive to provide affordable and quality treatments for the health of the community and targeted groups. Therefore, we work collaboratively with healthcare providers to provide a steady supply of medicines that meet the specific healthcare needs of the community.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 614,
+      "title": "Visually impaired people by providing the best and quality eye care service",
+      "slug": "visually-impaired-people-by-providing-the-best-and-quality-eye-care-service",
+      "date": "2024-01-05 05:47:26",
+      "excerpt": "",
+      "html": "Our organization is dedicated to serving visually impaired people by providing the best and highest quality eye care services. Our objective is to ensure that people with vision impairments receive care, allowing them to improve their eyesight. We provide eye examinations, vision evaluations, treatment of eye problems, and more.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    },
+    {
+      "id": 617,
+      "title": "Helping Hands for Physically Challenged People",
+      "slug": "helping-hands-for-physically-challenged-people",
+      "date": "2024-01-05 05:48:19",
+      "excerpt": "",
+      "html": "Our organization believes in providing helping hands for physically challenged people to enhance their quality of life and promote equal opportunities for their full participation in society. Our efforts aim to create a supportive environment where physically challenged individuals can thrive and overcome the barriers they face.",
+      "categories": [
+        {
+          "name": "Initiatives For Youth",
+          "slug": "programs-for-elderly"
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "Programs for children",
+      "slug": "programs-for-children"
+    },
+    {
+      "name": "Initiatives For Youth",
+      "slug": "programs-for-elderly"
+    },
+    {
+      "name": "Events",
+      "slug": "events"
+    }
+  ]
+}

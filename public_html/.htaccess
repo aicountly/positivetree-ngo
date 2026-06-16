@@ -1,0 +1,8 @@
+# Positive Tree marketing site
+DirectoryIndex index.html
+
+# Serve trailing-slash URLs via directory index.html
+Options -MultiViews
+
+# Custom 404
+ErrorDocument 404 /index.html
