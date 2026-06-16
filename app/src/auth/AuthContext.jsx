@@ -5,6 +5,7 @@ import { AuthContext } from './useAuth'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [setupRequired, setSetupRequired] = useState(undefined)
+  const [setupLocked, setSetupLocked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [initError, setInitError] = useState('')
 
@@ -27,6 +28,7 @@ export function AuthProvider({ children }) {
       throw new Error('Invalid setup status response from API')
     }
     setSetupRequired(data.setup_required)
+    setSetupLocked(Boolean(data.setup_locked))
     return data.setup_required
   }, [])
 
@@ -76,6 +78,7 @@ export function AuthProvider({ children }) {
     setToken(data.token)
     setUser(data.user)
     setSetupRequired(false)
+    setSetupLocked(false)
     setInitError('')
     return data.user
   }, [])
@@ -88,6 +91,7 @@ export function AuthProvider({ children }) {
     setToken(data.token)
     setUser(data.user)
     setSetupRequired(false)
+    setSetupLocked(false)
     setInitError('')
     return data.user
   }, [])
@@ -97,6 +101,7 @@ export function AuthProvider({ children }) {
       user,
       loading,
       setupRequired,
+      setupLocked,
       initError,
       login,
       setup,
@@ -106,7 +111,7 @@ export function AuthProvider({ children }) {
       isSuperadmin: user?.role === 'superadmin',
       canWrite: user?.role === 'superadmin' || user?.role === 'admin',
     }),
-    [user, loading, setupRequired, initError, login, setup, logout, refreshUser, refreshSetupStatus],
+    [user, loading, setupRequired, setupLocked, initError, login, setup, logout, refreshUser, refreshSetupStatus],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

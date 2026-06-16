@@ -40,6 +40,15 @@ class Migrator
         }
 
         self::backfillDonations($pdo);
+        self::ensureSetupLock($pdo);
+    }
+
+    private static function ensureSetupLock(\PDO $pdo): void
+    {
+        $count = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'superadmin'")->fetchColumn();
+        if ($count > 0) {
+            \App\SetupLock::markCompleted();
+        }
     }
 
     private static function ensureColumn(\PDO $pdo, string $table, string $column, string $definition): void

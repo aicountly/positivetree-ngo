@@ -4,7 +4,7 @@ import { useAuth } from '../auth/useAuth'
 import { Alert, Button, Card, Input } from '../components/ui'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, setupRequired } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -65,6 +65,15 @@ export default function Login() {
             {submitting ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
+
+        {setupRequired === true && (
+          <p className="mt-4 text-center text-sm text-slate-600">
+            First time here?{' '}
+            <Link to="/setup" className="font-medium text-green-700 hover:underline">
+              Run initial setup
+            </Link>
+          </p>
+        )}
       </Card>
     </div>
   )

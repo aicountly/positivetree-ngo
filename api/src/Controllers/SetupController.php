@@ -8,6 +8,7 @@ use App\Auth;
 use App\Http\Request;
 use App\Http\Response;
 use App\Repositories\UserRepository;
+use App\SetupLock;
 
 class SetupController
 {
@@ -19,14 +20,22 @@ class SetupController
 
     public function status(Request $request): void
     {
+        $hasSuperadmin = $this->users->hasSuperadmin();
+        if ($hasSuperadmin) {
+            SetupLock::markCompleted();
+        }
+
+        $setupLocked = SetupLock::exists() && !$hasSuperadmin;
+
         Response::json([
-            'setup_required' => !$this->users->hasSuperadmin(),
+            'setup_required' => !$hasSuperadmin && !SetupLock::exists(),
+            'setup_locked' => $setupLocked,
         ]);
     }
 
     public function create(Request $request): void
     {
-        if ($this->users->hasSuperadmin()) {
+        if ($this->users->hasSuperadmin() || SetupLock::exists()) {
             Response::error('Setup already completed', 409);
             return;
         }
@@ -61,6 +70,7 @@ class SetupController
         ]);
 
         $publicUser = $this->auth->publicUser($user);
+        SetupLock::markCompleted();
         Response::json([
             'user' => $publicUser,
             'token' => $this->auth->issueToken($user),

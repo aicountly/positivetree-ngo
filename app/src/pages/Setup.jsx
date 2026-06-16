@@ -4,7 +4,7 @@ import { useAuth } from '../auth/useAuth'
 import { Alert, Button, Card, Input } from '../components/ui'
 
 export default function Setup() {
-  const { setup, refreshSetupStatus } = useAuth()
+  const { setup, refreshSetupStatus, setupLocked } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -27,6 +27,12 @@ export default function Setup() {
           return
         }
 
+        if (setupLocked) {
+          setAllowed(false)
+          setError('Initial setup is locked because it was already completed on this server.')
+          return
+        }
+
         setAllowed(true)
       } catch (err) {
         if (!cancelled) {
@@ -42,7 +48,7 @@ export default function Setup() {
     return () => {
       cancelled = true
     }
-  }, [refreshSetupStatus])
+  }, [refreshSetupStatus, setupLocked])
 
   function updateField(field) {
     return (event) => setForm((current) => ({ ...current, [field]: event.target.value }))
