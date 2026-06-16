@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, fetchSignaturePreviewBlob, previewDocument, uploadDocumentSignature } from '../api/client'
 import { Alert, Button, Card, Input, Select, Textarea } from '../components/ui'
 
-const DOCUMENT_LOGO_SRC = '/images/2023/07/logo-tree.svg'
+const DOCUMENT_LOGO_SRC = '/images/2023/07/logo-tree.png'
 
 const PAPER_OPTIONS = [
   { value: 'A4', label: 'A4' },
@@ -425,7 +425,7 @@ export default function DocumentSettings() {
                   />
                   {uploadingSignature && <p className="mt-2 text-sm text-slate-600">Uploading signature...</p>}
                   <p className="mt-2 text-sm text-slate-600">
-                    Upload a PNG/JPG/WebP signature image used on receipt and certificate PDFs.
+                    Upload a PNG/JPG/WebP signature to replace the default sample signature on receipt and certificate PDFs.
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">

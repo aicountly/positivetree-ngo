@@ -12,7 +12,7 @@ return [
         'phone' => '+91 6384184900',
         'email' => 'info@positivetree.ngo',
         'website' => 'https://positivetree.ngo',
-        'logo_filename' => 'logo.svg',
+        'logo_filename' => 'logo.png',
     ],
     'receipt' => [
         'title' => 'DONATION RECEIPT',
@@ -47,18 +47,17 @@ return [
     'certificate' => [
         'title' => 'DONATION CERTIFICATE',
         'opening_text' => 'This is to certify that',
-        'body_text' => '{{donor_name}} has made a generous contribution of {{amount_inr}} towards {{cause}} at Positive Tree Foundation.',
-        'closing_text' => 'We acknowledge this contribution with gratitude and confirm that the details have been verified by our Accounts Team.',
-        'eighty_g_registration_number' => 'AACTN1234F',
+        'body_text' => 'has generously contributed {{amount_inr}} ({{amount_words}}) towards {{cause}} at Positive Tree Foundation.',
+        'closing_text' => 'This certificate is issued in gratitude for your generous support towards our mission. The contribution details have been verified by our Accounts Team.',
+        'eighty_g_registration_number' => '',
         'eighty_g_notes' => [
-            'Donations to Positive Tree Foundation are eligible for tax deduction under Section 80G of the Income Tax Act, 1961.',
-            'This certificate serves as proof of donation for tax purposes.',
-            'Please retain this certificate for your income tax records.',
+            'Eligible for deduction under Section 80G of the Income Tax Act, 1961.',
+            'Deduction available to the donor subject to valid registration, donor eligibility, mode of payment, and prevailing law.',
         ],
         'signatory_name' => 'Authorized Signatory',
         'signatory_title' => 'Accounts Team',
         'signatory_label' => 'Authorized Signatory',
-        'accent_color' => '#20994D',
+        'accent_color' => '#1B4332',
         'brand_brown' => '#986326',
         'show_fields' => [
             'receipt_number' => true,
@@ -73,10 +72,10 @@ return [
         'print' => [
             'paper' => 'A4',
             'orientation' => 'portrait',
-            'margin_top_mm' => 12,
-            'margin_right_mm' => 12,
-            'margin_bottom_mm' => 12,
-            'margin_left_mm' => 12,
+            'margin_top_mm' => 8,
+            'margin_right_mm' => 8,
+            'margin_bottom_mm' => 8,
+            'margin_left_mm' => 8,
         ],
     ],
 ];

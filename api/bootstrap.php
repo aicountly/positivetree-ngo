@@ -139,7 +139,50 @@ function uploadsDir(): string
 
 function documentLogoPath(): string
 {
-    return __DIR__ . '/assets/documents/logo.svg';
+    return __DIR__ . '/assets/documents/logo.png';
+}
+
+function documentAssetPath(string $filename): string
+{
+    return __DIR__ . '/assets/documents/' . basename($filename);
+}
+
+function documentAssetDataUri(string $filename): ?string
+{
+    $path = documentAssetPath($filename);
+    if (!is_readable($path)) {
+        return null;
+    }
+
+    $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'svg' => 'image/svg+xml',
+        'webp' => 'image/webp',
+        default => 'application/octet-stream',
+    };
+
+    return 'data:' . $mime . ';base64,' . base64_encode((string) file_get_contents($path));
+}
+
+function documentSignatureDataUri(?string $uploadFilename): ?string
+{
+    if ($uploadFilename !== null && $uploadFilename !== '') {
+        $path = uploadsDir() . '/' . basename($uploadFilename);
+        if (is_readable($path)) {
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'svg' => 'image/svg+xml',
+                'webp' => 'image/webp',
+                default => 'application/octet-stream',
+            };
+
+            return 'data:' . $mime . ';base64,' . base64_encode((string) file_get_contents($path));
+        }
+    }
+
+    return documentAssetDataUri('signature-default.svg');
 }
 
 function normalizePan(?string $value): ?string

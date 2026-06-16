@@ -8,189 +8,188 @@
       --green: <?= htmlspecialchars($accentColor) ?>;
       --brown: <?= htmlspecialchars($brandBrown) ?>;
       --muted: #64748b;
-      --line: #d1d5db;
-      --panel: #f8fafc;
+      --panel-bg: #f4faf6;
       --amount-bg: #f0fdf4;
     }
     body {
       font-family: DejaVu Sans, sans-serif;
       color: #1e293b;
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.45;
     }
     .receipt { width: 100%; }
     .center { text-align: center; }
-    .logo { height: 72px; margin-bottom: 8px; }
+    .logo { height: 62px; margin-bottom: 4px; }
     .org-name {
+      font-family: DejaVu Serif, serif;
       color: var(--brown);
-      font-size: 22px;
+      font-size: 18px;
       font-weight: bold;
-      letter-spacing: 0.5px;
-      margin: 0;
+      letter-spacing: 0.4px;
+      margin: 0 0 4px;
       text-transform: uppercase;
     }
-    .tagline-wrap {
-      margin: 8px auto 10px;
-      width: 70%;
-      border-top: 1px solid var(--green);
-      border-bottom: 1px solid var(--green);
-      padding: 4px 0;
+    .tagline-table {
+      width: 72%;
+      margin: 0 auto 8px;
+      border-collapse: collapse;
     }
+    .tagline-line { border-top: 1px solid var(--green); height: 1px; }
     .tagline {
       color: var(--green);
-      font-size: 10px;
+      font-size: 8px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      margin: 0;
+      padding: 3px 8px;
+      white-space: nowrap;
     }
-    .title-pill-wrap { margin: 8px auto 10px; border-collapse: collapse; }
+    .title-pill-wrap { margin: 6px auto 8px; border-collapse: collapse; }
     .title-pill {
       background: var(--brown);
       color: #fff;
       padding: 6px 18px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
       letter-spacing: 0.5px;
       text-align: center;
     }
-    .contact-row {
-      color: var(--muted);
-      font-size: 9px;
-      margin-bottom: 14px;
-    }
-    .meta-bar {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 8px 0;
-      margin-bottom: 12px;
-    }
-    .meta-bar td {
-      width: 33.33%;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: #fff;
-      padding: 8px 10px;
-      vertical-align: top;
-    }
-    .meta-label {
-      color: var(--muted);
-      font-size: 9px;
-      margin-bottom: 2px;
-    }
-    .meta-value {
-      color: var(--green);
-      font-size: 12px;
-      font-weight: bold;
-    }
-    .details-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 10px 0;
-      margin-bottom: 12px;
-    }
-    .details-table td {
-      width: 50%;
-      vertical-align: top;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .panel-head {
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      letter-spacing: 0.4px;
-      padding: 7px 10px;
-      text-transform: uppercase;
-    }
-    .panel-head.donor { background: var(--brown); }
-    .panel-head.donation { background: var(--green); }
-    .panel-body { padding: 8px 10px 10px; background: #fff; }
-    .field-row {
-      padding: 6px 0;
-      border-bottom: 1px dashed #cbd5e1;
-    }
-    .field-row:last-child { border-bottom: none; }
-    .field-label {
-      color: var(--muted);
-      font-size: 9px;
-      margin-bottom: 2px;
-    }
-    .field-value {
-      font-size: 11px;
-      font-weight: bold;
-      color: #0f172a;
-    }
-    .amount-box {
-      border: 1px solid #bbf7d0;
-      background: var(--amount-bg);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-    }
-    .amount-table { width: 100%; border-collapse: collapse; }
-    .amount-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--green);
-      color: #fff;
-      text-align: center;
-      font-size: 22px;
-      line-height: 52px;
-      font-weight: bold;
-    }
-    .amount-main {
-      color: var(--green);
-      font-size: 18px;
-      font-weight: bold;
-      margin: 0 0 6px;
-    }
-    .amount-divider {
-      border-top: 1px solid #86efac;
-      margin: 8px 0;
-      text-align: center;
-      color: var(--green);
-      font-size: 10px;
-    }
-    .amount-words {
-      font-size: 11px;
-      color: #334155;
-    }
-    .thanks {
-      text-align: center;
-      color: #475569;
-      font-size: 10px;
-      margin: 10px 0 14px;
-      padding: 0 12px;
-    }
-    .footer-row {
+    .contact-table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 10px;
     }
+    .contact-table td {
+      color: var(--muted);
+      font-size: 8px;
+      vertical-align: top;
+      padding: 0 4px;
+    }
+    .contact-icon { width: 12px; height: 12px; vertical-align: middle; margin-right: 3px; }
+    .meta-shell {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    .meta-box {
+      width: 33.33%;
+      border: 1px solid #dbeafe;
+      background: #fff;
+      padding: 7px 8px;
+      vertical-align: top;
+    }
+    .meta-inner { width: 100%; border-collapse: collapse; }
+    .meta-icon { width: 18px; vertical-align: top; padding-right: 4px; }
+    .meta-icon img { width: 16px; height: 16px; }
+    .meta-label { color: var(--muted); font-size: 8px; margin-bottom: 2px; }
+    .meta-value { color: var(--green); font-size: 11px; font-weight: bold; }
+    .details-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 8px 0;
+      margin-bottom: 10px;
+    }
+    .details-table td {
+      width: 50%;
+      vertical-align: top;
+      border: 1px solid #dbeafe;
+      overflow: hidden;
+    }
+    .panel-head-table { width: 100%; border-collapse: collapse; }
+    .panel-head {
+      color: #fff;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+      padding: 6px 8px;
+      text-transform: uppercase;
+    }
+    .panel-head.donor { background: var(--brown); }
+    .panel-head.donation { background: var(--green); }
+    .panel-head-icon { width: 16px; padding-right: 4px; }
+    .panel-head-icon img { width: 14px; height: 14px; }
+    .panel-body { padding: 6px 8px 8px; background: #fff; }
+    .field-row { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+    .field-icon { width: 18px; vertical-align: top; padding-top: 1px; }
+    .field-icon img { width: 14px; height: 14px; }
+    .field-label { color: var(--muted); font-size: 8px; margin-bottom: 1px; }
+    .field-value { font-size: 10px; font-weight: bold; color: #0f172a; }
+    .field-divider { border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
+    .amount-box {
+      border: 1px solid #86c99a;
+      background: var(--amount-bg);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .amount-table { width: 100%; border-collapse: collapse; }
+    .amount-icon-cell { width: 58px; vertical-align: middle; }
+    .amount-icon-img { width: 52px; height: 52px; }
+    .amount-main {
+      color: var(--green);
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 0 6px;
+    }
+    .amount-divider-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+    .amount-divider-line { border-top: 1px solid #86efac; }
+    .amount-divider-icon { width: 18px; text-align: center; }
+    .amount-divider-icon img { width: 12px; height: 12px; }
+    .amount-words { font-size: 10px; color: #334155; }
+    .thanks {
+      text-align: center;
+      color: #475569;
+      font-size: 9px;
+      margin: 8px 0 10px;
+      padding: 0 12px;
+      line-height: 1.5;
+    }
+    .footer-row { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .signature-block { width: 55%; vertical-align: bottom; }
     .watermark-block { width: 45%; text-align: right; vertical-align: bottom; }
-    .signature-img { max-height: 48px; max-width: 160px; margin-bottom: 4px; }
-    .signature-name {
-      color: var(--green);
-      font-weight: bold;
-      font-size: 11px;
-    }
-    .signature-title { color: #475569; font-size: 10px; }
-    .watermark { opacity: 0.12; height: 110px; }
+    .signature-img { max-height: 44px; max-width: 170px; margin-bottom: 4px; }
+    .signature-name { color: var(--green); font-weight: bold; font-size: 10px; }
+    .signature-title { color: #475569; font-size: 9px; }
+    .watermark { opacity: 0.1; height: 100px; }
+    .banner-table { width: 100%; border-collapse: collapse; }
     .banner {
       background: #fff7ed;
       border: 1px solid #fed7aa;
-      border-radius: 8px;
       text-align: center;
       color: var(--brown);
-      font-size: 10px;
-      padding: 8px 10px;
+      font-size: 9px;
+      padding: 7px 8px;
     }
+    .banner-leaf { width: 14px; text-align: center; }
+    .banner-leaf img { width: 10px; height: 10px; }
   </style>
 </head>
 <body>
+<?php
+$renderFieldRow = static function (string $iconFile, string $label, string $value): string {
+    if ($value === '') {
+        return '';
+    }
+
+    $icon = documentAssetDataUri($iconFile);
+    $iconHtml = $icon ? '<img src="' . $icon . '" alt="" />' : '';
+
+    return '<table class="field-row"><tr>'
+        . '<td class="field-icon field-divider">' . $iconHtml . '</td>'
+        . '<td class="field-divider"><div class="field-label">' . htmlspecialchars($label) . '</div>'
+        . '<div class="field-value">' . htmlspecialchars($value) . '</div></td>'
+        . '</tr></table>';
+};
+
+$metaCell = static function (string $iconFile, string $label, string $value): string {
+    $icon = documentAssetDataUri($iconFile);
+    $iconHtml = $icon ? '<img src="' . $icon . '" alt="" />' : '';
+
+    return '<table class="meta-inner"><tr>'
+        . '<td class="meta-icon">' . $iconHtml . '</td>'
+        . '<td><div class="meta-label">' . htmlspecialchars($label) . '</div>'
+        . '<div class="meta-value">' . htmlspecialchars($value) . '</div></td>'
+        . '</tr></table>';
+};
+?>
   <div class="receipt">
     <div class="center">
       <?php if ($logoDataUri): ?>
@@ -198,47 +197,66 @@
       <?php endif; ?>
       <h1 class="org-name"><?= htmlspecialchars($organization['organization_name'] ?? '') ?></h1>
       <?php if (!empty($organization['tagline'])): ?>
-      <div class="tagline-wrap">
-        <p class="tagline"><?= htmlspecialchars($organization['tagline']) ?></p>
-      </div>
+      <table class="tagline-table" align="center">
+        <tr>
+          <td class="tagline-line"></td>
+          <td class="tagline"><?= htmlspecialchars($organization['tagline']) ?></td>
+          <td class="tagline-line"></td>
+        </tr>
+      </table>
       <?php endif; ?>
       <table class="title-pill-wrap" align="center">
         <tr>
           <td class="title-pill"><?= htmlspecialchars($document['title'] ?? 'DONATION RECEIPT') ?></td>
         </tr>
       </table>
-      <div class="contact-row">
-        <?= htmlspecialchars($placeholders['{{organization_address}}']) ?>
-        <?php if ($placeholders['{{organization_phone}}'] !== ''): ?>
-          &nbsp;|&nbsp; <?= htmlspecialchars($placeholders['{{organization_phone}}']) ?>
-        <?php endif; ?>
-        <?php if ($placeholders['{{organization_email}}'] !== ''): ?>
-          &nbsp;|&nbsp; <?= htmlspecialchars($placeholders['{{organization_email}}']) ?>
-        <?php endif; ?>
-      </div>
     </div>
 
-    <table class="meta-bar">
+    <table class="contact-table">
       <tr>
         <td>
-          <div class="meta-label">Receipt Number</div>
-          <div class="meta-value"><?= htmlspecialchars($placeholders['{{receipt_number}}']) ?></div>
+          <?php if ($icon = documentAssetDataUri('icon-location.svg')): ?>
+            <img class="contact-icon" src="<?= $icon ?>" alt="" />
+          <?php endif; ?>
+          <?= htmlspecialchars($placeholders['{{organization_address}}']) ?>
         </td>
-        <td>
-          <div class="meta-label">Receipt Date</div>
-          <div class="meta-value">
-            <?= !empty($document['show_fields']['donated_at'])
-              ? htmlspecialchars($placeholders['{{donated_at}}'])
-              : '—' ?>
-          </div>
+        <?php if ($placeholders['{{organization_phone}}'] !== ''): ?>
+        <td style="width: 18%; white-space: nowrap;">
+          <?php if ($icon = documentAssetDataUri('icon-phone.svg')): ?>
+            <img class="contact-icon" src="<?= $icon ?>" alt="" />
+          <?php endif; ?>
+          <?= htmlspecialchars($placeholders['{{organization_phone}}']) ?>
         </td>
-        <td>
-          <div class="meta-label">Payment Status</div>
-          <div class="meta-value">
-            <?= !empty($document['show_fields']['payment_status'])
-              ? htmlspecialchars($placeholders['{{payment_status}}'])
-              : '—' ?>
-          </div>
+        <?php endif; ?>
+        <?php if ($placeholders['{{organization_email}}'] !== ''): ?>
+        <td style="width: 22%; white-space: nowrap;">
+          <?php if ($icon = documentAssetDataUri('icon-mail.svg')): ?>
+            <img class="contact-icon" src="<?= $icon ?>" alt="" />
+          <?php endif; ?>
+          <?= htmlspecialchars($placeholders['{{organization_email}}']) ?>
+        </td>
+        <?php endif; ?>
+      </tr>
+    </table>
+
+    <table class="meta-shell">
+      <tr>
+        <td class="meta-box">
+          <?= $metaCell('icon-receipt.svg', 'Receipt Number', $placeholders['{{receipt_number}}']) ?>
+        </td>
+        <td class="meta-box">
+          <?= $metaCell(
+              'icon-calendar.svg',
+              'Receipt Date',
+              !empty($document['show_fields']['donated_at']) ? $placeholders['{{donated_at}}'] : '—'
+          ) ?>
+        </td>
+        <td class="meta-box">
+          <?= $metaCell(
+              'icon-check.svg',
+              'Payment Status',
+              !empty($document['show_fields']['payment_status']) ? $placeholders['{{payment_status}}'] : '—'
+          ) ?>
         </td>
       </tr>
     </table>
@@ -246,52 +264,49 @@
     <table class="details-table">
       <tr>
         <td>
-          <div class="panel-head donor">Donor Details</div>
+          <table class="panel-head-table">
+            <tr class="panel-head donor">
+              <td class="panel-head-icon">
+                <?php if ($icon = documentAssetDataUri('icon-person-white.svg')): ?>
+                  <img src="<?= $icon ?>" alt="" />
+                <?php endif; ?>
+              </td>
+              <td class="panel-head">Donor Details</td>
+            </tr>
+          </table>
           <div class="panel-body">
-            <div class="field-row">
-              <div class="field-label">Donor Name</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{donor_name}}']) ?></div>
-            </div>
+            <?= $renderFieldRow('icon-person.svg', 'Donor Name', $placeholders['{{donor_name}}']) ?>
             <?php if (!empty($document['show_fields']['email']) && $placeholders['{{donor_email}}'] !== ''): ?>
-            <div class="field-row">
-              <div class="field-label">Email</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{donor_email}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-email.svg', 'Email', $placeholders['{{donor_email}}']) ?>
             <?php endif; ?>
             <?php if (!empty($document['show_fields']['phone']) && $placeholders['{{donor_phone}}'] !== ''): ?>
-            <div class="field-row">
-              <div class="field-label">Phone</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{donor_phone}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-phone.svg', 'Phone', $placeholders['{{donor_phone}}']) ?>
             <?php endif; ?>
           </div>
         </td>
         <td>
-          <div class="panel-head donation">Donation Details</div>
+          <table class="panel-head-table">
+            <tr class="panel-head donation">
+              <td class="panel-head-icon">
+                <?php if ($icon = documentAssetDataUri('icon-heart-white.svg')): ?>
+                  <img src="<?= $icon ?>" alt="" />
+                <?php endif; ?>
+              </td>
+              <td class="panel-head">Donation Details</td>
+            </tr>
+          </table>
           <div class="panel-body">
             <?php if (!empty($document['show_fields']['cause'])): ?>
-            <div class="field-row">
-              <div class="field-label">Cause</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{cause}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-heart.svg', 'Cause', $placeholders['{{cause}}']) ?>
             <?php endif; ?>
             <?php if (!empty($document['show_fields']['channel'])): ?>
-            <div class="field-row">
-              <div class="field-label">Channel</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{channel}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-globe.svg', 'Channel', $placeholders['{{channel}}']) ?>
             <?php endif; ?>
             <?php if (!empty($document['show_fields']['payment_method']) && $placeholders['{{payment_method}}'] !== ''): ?>
-            <div class="field-row">
-              <div class="field-label">Payment Method</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{payment_method}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-card.svg', 'Payment Method', $placeholders['{{payment_method}}']) ?>
             <?php endif; ?>
             <?php if (!empty($document['show_fields']['transaction_ref']) && $placeholders['{{transaction_ref}}'] !== ''): ?>
-            <div class="field-row">
-              <div class="field-label">Transaction Ref</div>
-              <div class="field-value"><?= htmlspecialchars($placeholders['{{transaction_ref}}']) ?></div>
-            </div>
+              <?= $renderFieldRow('icon-ref.svg', 'Transaction Ref', $placeholders['{{transaction_ref}}']) ?>
             <?php endif; ?>
           </div>
         </td>
@@ -301,13 +316,25 @@
     <div class="amount-box">
       <table class="amount-table">
         <tr>
-          <td style="width: 60px; vertical-align: middle;">
-            <div class="amount-icon">Rs</div>
+          <td class="amount-icon-cell">
+            <?php if ($amountIcon = documentAssetDataUri('icon-amount-giving.svg')): ?>
+              <img class="amount-icon-img" src="<?= $amountIcon ?>" alt="" />
+            <?php endif; ?>
           </td>
           <td style="vertical-align: middle;">
             <p class="amount-main">Amount Received: <?= htmlspecialchars($placeholders['{{amount_inr}}']) ?></p>
             <?php if (!empty($document['show_fields']['amount_words'])): ?>
-            <div class="amount-divider">Amount in words</div>
+            <table class="amount-divider-table">
+              <tr>
+                <td class="amount-divider-line"></td>
+                <td class="amount-divider-icon">
+                  <?php if ($leafIcon = documentAssetDataUri('icon-leaf.svg')): ?>
+                    <img src="<?= $leafIcon ?>" alt="" />
+                  <?php endif; ?>
+                </td>
+                <td class="amount-divider-line"></td>
+              </tr>
+            </table>
             <div class="amount-words">
               Amount in Words: <strong><?= htmlspecialchars($placeholders['{{amount_words}}']) ?></strong>
             </div>
@@ -330,8 +357,6 @@
         <td class="signature-block">
           <?php if ($signatureDataUri): ?>
             <img class="signature-img" src="<?= $signatureDataUri ?>" alt="Signature" />
-          <?php else: ?>
-            <div style="height: 48px;"></div>
           <?php endif; ?>
           <div class="signature-name"><?= htmlspecialchars($document['signature_name'] ?? 'Authorized Signatory') ?></div>
           <div class="signature-title"><?= htmlspecialchars($document['signature_title'] ?? '') ?></div>
@@ -345,7 +370,21 @@
     </table>
 
     <?php if (!empty($document['banner_text'])): ?>
-    <div class="banner"><?= htmlspecialchars($document['banner_text']) ?></div>
+    <table class="banner-table">
+      <tr>
+        <td class="banner-leaf">
+          <?php if ($leafIcon = documentAssetDataUri('icon-leaf.svg')): ?>
+            <img src="<?= $leafIcon ?>" alt="" />
+          <?php endif; ?>
+        </td>
+        <td class="banner"><?= htmlspecialchars($document['banner_text']) ?></td>
+        <td class="banner-leaf">
+          <?php if ($leafIcon = documentAssetDataUri('icon-leaf.svg')): ?>
+            <img src="<?= $leafIcon ?>" alt="" />
+          <?php endif; ?>
+        </td>
+      </tr>
+    </table>
     <?php endif; ?>
   </div>
 </body>

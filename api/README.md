@@ -122,7 +122,7 @@ curl -s https://your-domain/api/setup/status
 
 Superadmins configure receipt and donation certificate PDFs at `/app/settings/documents`:
 
-- Organization details and bundled logo (`api/assets/documents/logo.svg`)
+- Organization details and bundled logo (`api/assets/documents/logo.png`)
 - Receipt/certificate wording, 80G notes, visible fields, shared signature upload, and print margins
 - Live PDF preview before saving
 

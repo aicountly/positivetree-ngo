@@ -27,6 +27,7 @@ class DocumentTemplateService
             '{{payment_method}}' => ucfirst(str_replace('_', ' ', (string) ($donation['payment_method'] ?? ''))),
             '{{transaction_ref}}' => (string) ($donation['transaction_ref'] ?? ''),
             '{{donated_at}}' => $this->formatReceiptDate((string) ($donation['donated_at'] ?? '')),
+            '{{certificate_date}}' => $this->formatCertificateDate((string) ($donation['donated_at'] ?? '')),
             '{{payment_status}}' => $this->paymentStatusLabel((string) ($donation['status'] ?? 'completed')),
             '{{organization_name}}' => (string) ($organization['organization_name'] ?? ''),
             '{{organization_tagline}}' => (string) ($organization['tagline'] ?? ''),
@@ -63,7 +64,7 @@ class DocumentTemplateService
         $document = $settings['receipt'] ?? $settings;
         $placeholders = $this->buildPlaceholders($donation, $organization);
         $logoDataUri = $this->logoDataUri();
-        $signatureDataUri = $this->uploadImageDataUri($document['signature_filename'] ?? null);
+        $signatureDataUri = documentSignatureDataUri($document['signature_filename'] ?? null);
         $pdfService = new DocumentPdfService();
         $pageCss = $pdfService->pageCss(
             $document['print'] ?? [],
@@ -85,7 +86,7 @@ class DocumentTemplateService
         $receiptDocument = $settings['receipt'] ?? [];
         $placeholders = $this->buildPlaceholders($donation, $organization);
         $logoDataUri = $this->logoDataUri();
-        $signatureDataUri = $this->uploadImageDataUri($receiptDocument['signature_filename'] ?? null);
+        $signatureDataUri = documentSignatureDataUri($receiptDocument['signature_filename'] ?? null);
         $pdfService = new DocumentPdfService();
         $pageCss = $pdfService->pageCss(
             $document['print'] ?? [],
@@ -147,6 +148,20 @@ class DocumentTemplateService
         try {
             $dt = new \DateTimeImmutable($value);
             return $dt->format('Y-m-d H:i:s') . ' UTC';
+        } catch (\Exception) {
+            return $value;
+        }
+    }
+
+    private function formatCertificateDate(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            $dt = new \DateTimeImmutable($value);
+            return $dt->format('d M Y');
         } catch (\Exception) {
             return $value;
         }
