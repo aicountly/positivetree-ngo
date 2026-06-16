@@ -127,11 +127,54 @@ Superadmins and admins configure receipt and donation certificate PDFs at `/app/
 - Organization details and bundled logo (`api/assets/documents/logo.png`)
 - The bundled logo is **auto-normalized for PDF output** (near-black matte removal + proper alpha re-encode via GD). Enable the PHP GD extension on the server for transparent logos in receipts and certificates; without GD, the raw PNG bytes are embedded as-is.
 - Receipt/certificate wording, 80G notes, visible fields, shared signature upload, and print margins
+- The Section 80G registration number lives here; if it is left blank the certificate prints **"To be configured"** for the 80G approval / registration number
 - Live PDF preview before saving
 
 Receipts are available immediately when a donation is completed. Donation certificates require a valid donor PAN and Accounts Team approval (`POST /api/donations/{id}/approve-certificate`) before download.
 
 Online donors receive a public receipt download link on the thank-you screen via `public_receipt_token` returned from payment verification.
+
+## PDF rendering engine
+
+The receipt and certificate templates use modern CSS (Grid, gradients, shadows, outline) which dompdf does not implement. The PDF pipeline therefore prefers a **self-hosted [Gotenberg](https://gotenberg.dev)** (Chromium-based) HTTP service when `GOTENBERG_URL` is set, and falls back to dompdf otherwise.
+
+```
+GOTENBERG_URL set  ->  Chromium PDF (matches HTML preview pixel-for-pixel)
+GOTENBERG_URL blank -> dompdf       (works, but CSS grid / gradients degrade)
+```
+
+### Local development
+
+```bash
+docker run --rm -p 3000:3000 gotenberg/gotenberg:8
+```
+
+Then in `public_html/api/.env`:
+
+```env
+GOTENBERG_URL=http://127.0.0.1:3000
+```
+
+Restart the API server, then preview at `/app/settings/documents`.
+
+### Production (cPanel)
+
+cPanel shared hosting cannot run Chromium directly. Run Gotenberg on a small VPS or sub-server and expose it over HTTPS:
+
+```bash
+docker run -d --restart unless-stopped \
+  -p 127.0.0.1:3000:3000 \
+  --name gotenberg \
+  gotenberg/gotenberg:8
+```
+
+Front it with nginx + TLS (e.g. `https://pdf.example.com`) and restrict source IPs to the cPanel server. Set in `public_html/api/.env`:
+
+```env
+GOTENBERG_URL=https://pdf.example.com
+```
+
+If Gotenberg is unreachable at request time, the renderer logs the failure to the PHP error log and falls back to dompdf so PDF generation never hard-fails.
 
 ## Security notes
 

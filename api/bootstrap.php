@@ -77,6 +77,24 @@ function config(string $key, ?string $default = null): ?string
     return (string) $value;
 }
 
+if (!function_exists('esc')) {
+    function esc(?string $value): string
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+
+function gotenbergUrl(): ?string
+{
+    $url = config('GOTENBERG_URL');
+    if ($url === null) {
+        return null;
+    }
+
+    $url = trim($url);
+    return $url === '' ? null : $url;
+}
+
 function nowIso(): string
 {
     return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');

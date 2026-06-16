@@ -38,10 +38,10 @@ return [
         'print' => [
             'paper' => 'A4',
             'orientation' => 'portrait',
-            'margin_top_mm' => 12,
-            'margin_right_mm' => 12,
-            'margin_bottom_mm' => 12,
-            'margin_left_mm' => 12,
+            'margin_top_mm' => 0,
+            'margin_right_mm' => 0,
+            'margin_bottom_mm' => 0,
+            'margin_left_mm' => 0,
         ],
     ],
     'certificate' => [
@@ -72,10 +72,10 @@ return [
         'print' => [
             'paper' => 'A4',
             'orientation' => 'portrait',
-            'margin_top_mm' => 8,
-            'margin_right_mm' => 8,
-            'margin_bottom_mm' => 8,
-            'margin_left_mm' => 8,
+            'margin_top_mm' => 0,
+            'margin_right_mm' => 0,
+            'margin_bottom_mm' => 0,
+            'margin_left_mm' => 0,
         ],
     ],
 ];
