@@ -24,11 +24,13 @@ function NavItems({ onNavigate }) {
           Pending certificates
         </NavLink>
       )}
+      {canWrite && (
+        <NavLink to="/settings/documents" className={navLinkClass} onClick={onNavigate}>
+          Documents
+        </NavLink>
+      )}
       {isSuperadmin && (
         <>
-          <NavLink to="/settings/documents" className={navLinkClass} onClick={onNavigate}>
-            Documents
-          </NavLink>
           <NavLink to="/users" className={navLinkClass} onClick={onNavigate}>
             Users
           </NavLink>

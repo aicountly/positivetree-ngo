@@ -142,6 +142,79 @@ function documentLogoPath(): string
     return __DIR__ . '/assets/documents/logo.png';
 }
 
+function documentLogoDataUri(): ?string
+{
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $path = documentLogoPath();
+    if (!is_readable($path)) {
+        return null;
+    }
+
+    $fallback = static function () use ($path): string {
+        return 'data:image/png;base64,' . base64_encode((string) file_get_contents($path));
+    };
+
+    if (!extension_loaded('gd') || !function_exists('imagecreatefrompng')) {
+        $cached = $fallback();
+        return $cached;
+    }
+
+    $source = @imagecreatefrompng($path);
+    if ($source === false) {
+        $cached = $fallback();
+        return $cached;
+    }
+
+    $width = imagesx($source);
+    $height = imagesy($source);
+    $dest = imagecreatetruecolor($width, $height);
+    if ($dest === false) {
+        imagedestroy($source);
+        $cached = $fallback();
+        return $cached;
+    }
+
+    imagealphablending($dest, false);
+    imagesavealpha($dest, true);
+    $transparent = imagecolorallocatealpha($dest, 0, 0, 0, 127);
+    imagefilledrectangle($dest, 0, 0, $width, $height, $transparent);
+
+    imagealphablending($source, false);
+    imagesavealpha($source, true);
+
+    $matteThreshold = 25;
+    for ($y = 0; $y < $height; $y++) {
+        for ($x = 0; $x < $width; $x++) {
+            $color = imagecolorat($source, $x, $y);
+            $alpha = ($color >> 24) & 0x7F;
+            $red = ($color >> 16) & 0xFF;
+            $green = ($color >> 8) & 0xFF;
+            $blue = $color & 0xFF;
+
+            if ($red <= $matteThreshold && $green <= $matteThreshold && $blue <= $matteThreshold) {
+                imagesetpixel($dest, $x, $y, $transparent);
+                continue;
+            }
+
+            $pixel = imagecolorallocatealpha($dest, $red, $green, $blue, $alpha);
+            imagesetpixel($dest, $x, $y, $pixel);
+        }
+    }
+
+    ob_start();
+    imagepng($dest);
+    $pngData = (string) ob_get_clean();
+    imagedestroy($source);
+    imagedestroy($dest);
+
+    $cached = 'data:image/png;base64,' . base64_encode($pngData);
+    return $cached;
+}
+
 function documentAssetPath(string $filename): string
 {
     return __DIR__ . '/assets/documents/' . basename($filename);

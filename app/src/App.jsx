@@ -32,8 +32,10 @@ export default function App() {
             <Route path="donations/new" element={<DonationForm />} />
           </Route>
           <Route path="donations/:id" element={<DonationDetail />} />
-          <Route element={<SuperadminRoute />}>
+          <Route element={<WriteRoute />}>
             <Route path="settings/documents" element={<DocumentSettings />} />
+          </Route>
+          <Route element={<SuperadminRoute />}>
             <Route path="users" element={<UsersList />} />
             <Route path="users/new" element={<UserForm />} />
             <Route path="users/:id" element={<UserForm />} />

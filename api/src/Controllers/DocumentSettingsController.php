@@ -28,13 +28,13 @@ class DocumentSettingsController
 
     public function show(Request $request): void
     {
-        $this->auth->requireUser($request, ['superadmin']);
+        $this->auth->requireUser($request, ['superadmin', 'admin']);
         Response::json(['settings' => $this->settings->get()]);
     }
 
     public function update(Request $request): void
     {
-        $user = $this->auth->requireUser($request, ['superadmin']);
+        $user = $this->auth->requireUser($request, ['superadmin', 'admin']);
         $body = $request->body;
 
         $saved = $this->settings->save([
@@ -48,7 +48,7 @@ class DocumentSettingsController
 
     public function uploadLogo(Request $request): void
     {
-        $user = $this->auth->requireUser($request, ['superadmin']);
+        $user = $this->auth->requireUser($request, ['superadmin', 'admin']);
 
         if (empty($_FILES['logo']) || !is_array($_FILES['logo'])) {
             Response::error('Logo file is required', 422);
@@ -89,7 +89,7 @@ class DocumentSettingsController
 
     public function uploadSignature(Request $request): void
     {
-        $user = $this->auth->requireUser($request, ['superadmin']);
+        $user = $this->auth->requireUser($request, ['superadmin', 'admin']);
 
         if (empty($_FILES['signature']) || !is_array($_FILES['signature'])) {
             Response::error('Signature image is required', 422);
@@ -130,7 +130,7 @@ class DocumentSettingsController
 
     public function signatureImage(Request $request): void
     {
-        $this->auth->requireUser($request, ['superadmin']);
+        $this->auth->requireUser($request, ['superadmin', 'admin']);
         $filename = $this->settings->signatureFilename();
 
         if ($filename === null) {
@@ -159,13 +159,13 @@ class DocumentSettingsController
 
     public function previewReceipt(Request $request): void
     {
-        $this->auth->requireUser($request, ['superadmin']);
+        $this->auth->requireUser($request, ['superadmin', 'admin']);
         $this->outputPreview($request, 'receipt');
     }
 
     public function previewCertificate(Request $request): void
     {
-        $this->auth->requireUser($request, ['superadmin']);
+        $this->auth->requireUser($request, ['superadmin', 'admin']);
         $this->outputPreview($request, 'certificate');
     }
 

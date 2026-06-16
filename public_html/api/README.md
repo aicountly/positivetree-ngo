@@ -7,6 +7,7 @@ PHP + SQLite REST API for donation receipt management and Razorpay online paymen
 - PHP 8.1+
 - Composer
 - SQLite extension enabled
+- GD extension with PNG support (recommended for receipt/certificate logo transparency in PDFs)
 - Writable `data/` directory
 
 ## Local development
@@ -66,6 +67,7 @@ Setup is allowed only when no superadmin exists. `POST /api/setup` returns `409 
 | Empty 500 response | Missing `vendor/` (Composer deps) | Run `npm run copy:api` locally, or on server: `cd public_html/api && composer install --no-dev` |
 | JSON: data directory not writable | SQLite permissions | `chmod 775 public_html/api/data` |
 | JSON: PDO SQLite not enabled | PHP extension missing | Enable `pdo_sqlite` in cPanel → Select PHP Version → Extensions |
+| Logo shows black box on PDF | GD missing or PNG matte | Enable `gd` in PHP; bundled logo is normalized when GD is available |
 
 Quick check after deploy:
 
@@ -91,11 +93,11 @@ curl -s https://your-domain/api/setup/status
 | POST | `/api/donations/{id}/approve-certificate` | admin+ | Approve donation for certificate |
 | POST | `/api/donations/{id}/revoke-certificate` | superadmin | Revoke certificate approval |
 | GET | `/api/public/receipt/{token}` | Public | PDF/HTML receipt via public token |
-| GET | `/api/settings/documents` | superadmin | Document settings (receipt + certificate) |
-| PUT | `/api/settings/documents` | superadmin | Save document settings |
-| POST | `/api/settings/documents/logo` | superadmin | Upload organization logo |
-| GET | `/api/settings/documents/preview/receipt` | superadmin | Preview receipt PDF |
-| GET | `/api/settings/documents/preview/certificate` | superadmin | Preview certificate PDF |
+| GET | `/api/settings/documents` | admin+ | Document settings (receipt + certificate) |
+| PUT | `/api/settings/documents` | admin+ | Save document settings |
+| POST | `/api/settings/documents/logo` | admin+ | Upload organization logo |
+| GET | `/api/settings/documents/preview/receipt` | admin+ | Preview receipt PDF |
+| GET | `/api/settings/documents/preview/certificate` | admin+ | Preview certificate PDF |
 | GET | `/api/users` | superadmin | List users |
 | GET | `/api/users/{id}` | superadmin | Get user |
 | POST | `/api/users` | superadmin | Create admin/viewer user |
@@ -107,8 +109,8 @@ curl -s https://your-domain/api/setup/status
 
 ## Roles
 
-- **superadmin** — manage users, donations, and document settings (`/app/settings/documents`)
-- **admin** — manage offline donations, add donor PAN, approve donation certificates (`/app/certificates/pending`)
+- **superadmin** — manage users and document settings (`/app/settings/documents`)
+- **admin** — manage donations, donor PAN, certificate approval, pending certificates queue, and document PDF settings (`/app/settings/documents`)
 - **viewer** — read-only access to donations, receipts, and approved certificates
 
 ## Donor PAN and certificates
@@ -120,9 +122,10 @@ curl -s https://your-domain/api/setup/status
 
 ## Document settings
 
-Superadmins configure receipt and donation certificate PDFs at `/app/settings/documents`:
+Superadmins and admins configure receipt and donation certificate PDFs at `/app/settings/documents`:
 
 - Organization details and bundled logo (`api/assets/documents/logo.png`)
+- The bundled logo is **auto-normalized for PDF output** (near-black matte removal + proper alpha re-encode via GD). Enable the PHP GD extension on the server for transparent logos in receipts and certificates; without GD, the raw PNG bytes are embedded as-is.
 - Receipt/certificate wording, 80G notes, visible fields, shared signature upload, and print margins
 - Live PDF preview before saving
 

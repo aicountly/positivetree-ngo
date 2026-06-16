@@ -45,7 +45,7 @@ class DocumentTemplateService
 
     public function logoDataUri(?string $filename = null): ?string
     {
-        return $this->fileDataUri(documentLogoPath());
+        return documentLogoDataUri();
     }
 
     public function uploadImageDataUri(?string $filename): ?string
