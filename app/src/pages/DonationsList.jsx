@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/useAuth'
 import { Badge, Button, Card, Input, Select } from '../components/ui'
 import { formatDateTime, formatInr } from '../utils/format'
 
@@ -17,9 +17,12 @@ export default function DonationsList() {
   const [causes, setCauses] = useState([])
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [filtering, setFiltering] = useState(false)
 
   async function loadDonations(nextFilters = filters) {
     setError('')
+    setFiltering(true)
     try {
       const params = new URLSearchParams()
       if (nextFilters.search) params.set('search', nextFilters.search)
@@ -29,14 +32,34 @@ export default function DonationsList() {
       setData(result)
     } catch (err) {
       setError(err.message)
+    } finally {
+      setFiltering(false)
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    api('/donations/causes')
-      .then((result) => setCauses(result.causes))
-      .catch(() => {})
-    loadDonations()
+    let cancelled = false
+
+    async function loadInitial() {
+      setError('')
+      try {
+        const [causesResult, donationsResult] = await Promise.all([
+          api('/donations/causes'),
+          api('/donations'),
+        ])
+        if (cancelled) return
+        setCauses(causesResult.causes)
+        setData(donationsResult)
+      } catch (err) {
+        if (!cancelled) setError(err.message)
+      }
+    }
+
+    loadInitial()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   function handleFilterSubmit(event) {
@@ -100,9 +123,9 @@ export default function DonationsList() {
       {error && <p className="text-red-600">{error}</p>}
 
       <Card className="overflow-x-auto">
-        {!data ? (
-          <p className="text-slate-600">Loading donations...</p>
-        ) : data.items.length === 0 ? (
+        {loading || filtering ? (
+          <p className="text-slate-600">{loading ? 'Loading donations...' : 'Updating results...'}</p>
+        ) : !data || data.items.length === 0 ? (
           <p className="text-slate-600">No donations found.</p>
         ) : (
           <table className="min-w-full text-left text-sm">

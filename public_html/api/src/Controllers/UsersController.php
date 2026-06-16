@@ -30,6 +30,21 @@ class UsersController
         Response::json(['items' => $items]);
     }
 
+    public function show(Request $request, array $params): void
+    {
+        $current = $this->auth->requireUser($request);
+        $this->auth->requireSuperadmin($current);
+
+        $id = (int) ($params['id'] ?? 0);
+        $user = $this->users->findById($id);
+        if ($user === null) {
+            Response::error('User not found', 404);
+            return;
+        }
+
+        Response::json(['user' => $this->auth->publicUser($user)]);
+    }
+
     public function create(Request $request): void
     {
         $current = $this->auth->requireUser($request);
@@ -51,8 +66,8 @@ class UsersController
             return;
         }
 
-        if (!in_array($role, Auth::ROLES, true)) {
-            Response::error('Invalid role', 422);
+        if (!in_array($role, ['admin', 'viewer'], true)) {
+            Response::error('Only admin or viewer roles can be assigned here', 422);
             return;
         }
 
@@ -92,9 +107,18 @@ class UsersController
 
         $body = $request->body;
 
-        if (isset($body['role']) && !in_array($body['role'], Auth::ROLES, true)) {
-            Response::error('Invalid role', 422);
-            return;
+        if (isset($body['role'])) {
+            if (!in_array($body['role'], Auth::ROLES, true)) {
+                Response::error('Invalid role', 422);
+                return;
+            }
+
+            if ($existing['role'] === 'superadmin' && $body['role'] !== 'superadmin') {
+                if ($this->users->countByRole('superadmin') <= 1) {
+                    Response::error('Cannot demote the last superadmin', 422);
+                    return;
+                }
+            }
         }
 
         if (!empty($body['password'])) {
@@ -119,8 +143,10 @@ class UsersController
         }
 
         if ($existing['role'] === 'superadmin' && isset($body['is_active']) && !$body['is_active']) {
-            Response::error('Cannot deactivate superadmin account', 422);
-            return;
+            if ($this->users->countByRole('superadmin') <= 1) {
+                Response::error('Cannot deactivate the last superadmin account', 422);
+                return;
+            }
         }
 
         $updated = $this->users->update($id, $body);

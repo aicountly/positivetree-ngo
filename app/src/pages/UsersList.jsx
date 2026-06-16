@@ -12,11 +12,13 @@ const ROLE_LABELS = {
 export default function UsersList() {
   const [users, setUsers] = useState([])
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     api('/users')
       .then((result) => setUsers(result.items))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -34,6 +36,9 @@ export default function UsersList() {
       {error && <p className="text-red-600">{error}</p>}
 
       <Card className="overflow-x-auto">
+        {loading ? (
+          <p className="text-slate-600">Loading users...</p>
+        ) : (
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-slate-200 text-slate-500">
             <tr>
@@ -64,6 +69,7 @@ export default function UsersList() {
             ))}
           </tbody>
         </table>
+        )}
       </Card>
     </div>
   )

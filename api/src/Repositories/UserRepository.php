@@ -37,6 +37,13 @@ class UserRepository
         return $stmt->fetchAll();
     }
 
+    public function countByRole(string $role): int
+    {
+        $stmt = Database::connection()->prepare('SELECT COUNT(*) FROM users WHERE role = :role AND is_active = 1');
+        $stmt->execute(['role' => $role]);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function create(array $data): array
     {
         $now = nowIso();

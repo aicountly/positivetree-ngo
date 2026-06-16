@@ -15,6 +15,7 @@ use App\Services\ReceiptPdfService;
 class DonationsController
 {
     private const OFFLINE_METHODS = ['cash', 'cheque', 'bank_transfer', 'upi'];
+    private const STATUSES = ['pending', 'completed', 'failed', 'refunded'];
 
     public function __construct(
         private readonly DonationRepository $donations = new DonationRepository(),
@@ -80,7 +81,7 @@ class DonationsController
             'transaction_ref' => $body['transaction_ref'] ?? null,
             'status' => 'completed',
             'notes' => $body['notes'] ?? null,
-            'donated_at' => $body['donated_at'] ?? nowIso(),
+            'donated_at' => normalizeDonatedAt($body['donated_at'] ?? null),
             'created_by' => $user['id'],
         ]);
 
@@ -99,22 +100,31 @@ class DonationsController
             return;
         }
 
-        if ($existing['channel'] === 'online' && $existing['status'] === 'completed') {
-            Response::error('Completed online donations cannot be edited', 422);
+        if ($existing['channel'] === 'online') {
+            Response::error('Online donations cannot be edited manually', 422);
             return;
         }
 
         $body = $request->body;
         $data = [];
 
-        foreach (['donor_name', 'donor_email', 'donor_phone', 'cause', 'payment_method', 'transaction_ref', 'notes', 'donated_at', 'status'] as $field) {
+        foreach (['donor_name', 'donor_email', 'donor_phone', 'cause', 'payment_method', 'transaction_ref', 'notes'] as $field) {
             if (array_key_exists($field, $body)) {
                 $data[$field] = $body[$field];
             }
         }
 
+        if (array_key_exists('donated_at', $body)) {
+            $data['donated_at'] = normalizeDonatedAt((string) $body['donated_at']);
+        }
+
         if (isset($data['cause']) && !DonationCauses::isValid((string) $data['cause'])) {
             Response::error('Invalid cause', 422);
+            return;
+        }
+
+        if (isset($data['payment_method']) && !in_array($data['payment_method'], self::OFFLINE_METHODS, true)) {
+            Response::error('Invalid payment method', 422);
             return;
         }
 
@@ -125,6 +135,19 @@ class DonationsController
                 return;
             }
             $data['amount_paise'] = $amountPaise;
+        }
+
+        if (array_key_exists('status', $body)) {
+            $status = (string) $body['status'];
+            if (!in_array($status, self::STATUSES, true)) {
+                Response::error('Invalid status', 422);
+                return;
+            }
+            $data['status'] = $status;
+
+            if ($status === 'completed' && empty($existing['receipt_number'])) {
+                $data['receipt_number'] = $this->receiptNumbers->next();
+            }
         }
 
         $updated = $this->donations->update($id, $data);

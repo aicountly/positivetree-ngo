@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/useAuth'
 import { Alert, Button, Card, Input } from '../components/ui'
 
 export default function Setup() {

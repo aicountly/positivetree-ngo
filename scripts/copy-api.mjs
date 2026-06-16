@@ -1,5 +1,5 @@
-import { cpSync, existsSync, mkdirSync, rmSync } from 'fs';
-import { join, dirname } from 'path';
+import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
+import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 
@@ -8,26 +8,41 @@ const root = join(__dirname, '..');
 const apiSrc = join(root, 'api');
 const apiDest = join(root, 'public_html', 'api');
 
-if (existsSync(apiDest)) {
-  rmSync(apiDest, { recursive: true, force: true });
+function shouldSkipSource(relPath) {
+  const rel = relPath.replace(/\\/g, '/');
+  if (rel.includes('/vendor/')) return true;
+  if (rel.endsWith('/.env')) return true;
+  if (rel.includes('.sqlite')) return true;
+  return false;
 }
 
-cpSync(apiSrc, apiDest, {
-  recursive: true,
-  filter: (src) => {
-    const rel = src.replace(/\\/g, '/');
-    if (rel.includes('/vendor/')) return false;
-    if (rel.endsWith('/.env')) return false;
-    if (rel.includes('.sqlite')) return false;
-    return true;
-  },
-});
+function copyTree(src, dest) {
+  mkdirSync(dest, { recursive: true });
+
+  for (const entry of readdirSync(src)) {
+    const srcPath = join(src, entry);
+    const destPath = join(dest, entry);
+    const rel = relative(apiSrc, srcPath);
+
+    if (shouldSkipSource(rel)) {
+      continue;
+    }
+
+    if (statSync(srcPath).isDirectory()) {
+      copyTree(srcPath, destPath);
+    } else {
+      cpSync(srcPath, destPath);
+    }
+  }
+}
 
 mkdirSync(join(apiDest, 'data'), { recursive: true });
+copyTree(apiSrc, apiDest);
 
 console.log('Running composer install in public_html/api...');
-const composerCmd = existsSync(join(root, 'composer.phar'))
-  ? 'php ../composer.phar install --no-dev --optimize-autoloader'
+const composerPhar = join(root, 'composer.phar');
+const composerCmd = existsSync(composerPhar)
+  ? `php "${composerPhar}" install --no-dev --optimize-autoloader`
   : 'composer install --no-dev --optimize-autoloader';
 
 try {
@@ -39,4 +54,4 @@ try {
   console.warn('Composer install failed. Run `composer install --no-dev` in public_html/api on the server.');
 }
 
-console.log('API copied to public_html/api');
+console.log('API copied to public_html/api (preserved existing .env and database)');

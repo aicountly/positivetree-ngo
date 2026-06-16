@@ -3,10 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { Alert, Button, Card, Input, Select } from '../components/ui'
 
-const ROLES = [
+const CREATE_ROLES = [
   { value: 'admin', label: 'Admin' },
   { value: 'viewer', label: 'Viewer' },
+]
+
+const EDIT_ROLES = [
   { value: 'superadmin', label: 'Superadmin' },
+  ...CREATE_ROLES,
 ]
 
 export default function UserForm() {
@@ -14,6 +18,7 @@ export default function UserForm() {
   const navigate = useNavigate()
   const isEdit = Boolean(id)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(isEdit)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     name: '',
@@ -26,12 +31,15 @@ export default function UserForm() {
   useEffect(() => {
     if (!isEdit) return
 
-    api('/users')
-      .then((result) => {
-        const user = result.items.find((item) => String(item.id) === String(id))
-        if (!user) {
-          throw new Error('User not found')
-        }
+    let cancelled = false
+
+    async function loadUser() {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await api(`/users/${id}`)
+        if (cancelled) return
+        const user = data.user
         setForm({
           name: user.name,
           email: user.email,
@@ -39,8 +47,17 @@ export default function UserForm() {
           role: user.role,
           is_active: user.is_active,
         })
-      })
-      .catch((err) => setError(err.message))
+      } catch (err) {
+        if (!cancelled) setError(err.message)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    loadUser()
+    return () => {
+      cancelled = true
+    }
   }, [id, isEdit])
 
   function updateField(field) {
@@ -73,7 +90,13 @@ export default function UserForm() {
       } else {
         await api('/users', {
           method: 'POST',
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            password: form.password,
+            role: form.role,
+            is_active: form.is_active,
+          }),
         })
       }
       navigate('/users')
@@ -82,6 +105,10 @@ export default function UserForm() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (loading) {
+    return <p className="text-slate-600">Loading user...</p>
   }
 
   return (
@@ -104,7 +131,7 @@ export default function UserForm() {
           <Input label="Full name" value={form.name} onChange={updateField('name')} required />
           <Input label="Email" type="email" value={form.email} onChange={updateField('email')} required />
           <Select label="Role" value={form.role} onChange={updateField('role')}>
-            {ROLES.map((role) => (
+            {(isEdit ? EDIT_ROLES : CREATE_ROLES).map((role) => (
               <option key={role.value} value={role.value}>
                 {role.label}
               </option>

@@ -1,3 +1,9 @@
 RewriteEngine On
+
+# Block direct access to sensitive files
+RewriteRule ^data/ - [F,L]
+RewriteRule ^\.env$ - [F,L]
+RewriteRule ^(schema\.sql|composer\.(json|lock))$ - [F,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [QSA,L]

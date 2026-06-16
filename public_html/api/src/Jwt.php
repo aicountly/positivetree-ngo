@@ -39,6 +39,16 @@ class Jwt
             return null;
         }
 
+        $headerJson = self::base64UrlDecode($headerB64);
+        if ($headerJson === null) {
+            return null;
+        }
+
+        $header = json_decode($headerJson, true);
+        if (!is_array($header) || ($header['alg'] ?? '') !== 'HS256') {
+            return null;
+        }
+
         $payloadJson = self::base64UrlDecode($payloadB64);
         if ($payloadJson === null) {
             return null;

@@ -54,9 +54,9 @@ CORS_ORIGIN=http://localhost:5173
 4. Visit `https://positivetree.ngo/app/setup` once to create the superadmin
 5. Configure Razorpay webhook:
    - URL: `https://positivetree.ngo/api/webhooks/razorpay`
-   - Event: `payment.captured`
+   - Events: `payment.captured`, `payment.failed`
 
-**Note:** rsync excludes `.env`, so server secrets are preserved across deploys.
+**Note:** rsync excludes `.env`, and `npm run copy:api` preserves existing `public_html/api/.env` and SQLite files.
 
 ## API endpoints
 
@@ -67,17 +67,28 @@ CORS_ORIGIN=http://localhost:5173
 | POST | `/api/auth/login` | Public | Login, returns JWT |
 | GET | `/api/auth/me` | JWT | Current user |
 | GET | `/api/dashboard` | JWT | Dashboard stats |
+| GET | `/api/donations/causes` | JWT | Valid donation causes |
 | GET/POST | `/api/donations` | JWT | List / create offline donation |
-| GET/PUT | `/api/donations/{id}` | JWT | View / edit donation |
+| GET/PUT | `/api/donations/{id}` | JWT | View / edit offline donation |
 | GET | `/api/donations/{id}/receipt` | JWT | PDF receipt |
-| GET/POST/PUT | `/api/users` | superadmin | User management |
+| GET | `/api/users` | superadmin | List users |
+| GET | `/api/users/{id}` | superadmin | Get user |
+| POST | `/api/users` | superadmin | Create admin/viewer user |
+| PUT/PATCH | `/api/users/{id}` | superadmin | Update user |
 | GET | `/api/payments/razorpay/config` | Public | Razorpay public key |
 | POST | `/api/payments/razorpay/order` | Public | Create payment order |
 | POST | `/api/payments/razorpay/verify` | Public | Verify payment |
-| POST | `/api/webhooks/razorpay` | Webhook | Payment capture handler |
+| POST | `/api/webhooks/razorpay` | Webhook | Payment capture/failure handler |
 
 ## Roles
 
 - **superadmin** — manage users and donations
-- **admin** — manage donations
+- **admin** — manage offline donations
 - **viewer** — read-only access to donations and receipts
+
+## Security notes
+
+- `.htaccess` blocks direct access to `.env`, `data/`, and schema files on Apache
+- Online donations cannot be edited manually in the admin portal
+- Razorpay webhooks verify HMAC signatures against the raw request body
+- JWT must use HS256

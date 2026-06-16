@@ -49,13 +49,42 @@ function nowIso(): string
     return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
 }
 
+function rawBody(): string
+{
+    static $raw = null;
+    if ($raw === null) {
+        $raw = file_get_contents('php://input') ?: '';
+    }
+
+    return $raw;
+}
+
 function jsonBody(): array
 {
-    $raw = file_get_contents('php://input');
-    if ($raw === false || trim($raw) === '') {
+    $raw = rawBody();
+    if (trim($raw) === '') {
         return [];
     }
 
     $data = json_decode($raw, true);
     return is_array($data) ? $data : [];
+}
+
+function normalizeDonatedAt(?string $value): string
+{
+    if ($value === null || trim($value) === '') {
+        return nowIso();
+    }
+
+    $value = trim($value);
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        return $value . 'T00:00:00Z';
+    }
+
+    return $value;
+}
+
+function escapeLike(string $term): string
+{
+    return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term);
 }

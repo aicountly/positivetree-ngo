@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, downloadReceipt } from '../api/client'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/useAuth'
 import { Alert, Badge, Button, Card, Input, Select, Textarea } from '../components/ui'
 import { formatDateTime, formatInr, toDateInput } from '../utils/format'
+
+const PAYMENT_METHODS = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'cheque', label: 'Cheque' },
+  { value: 'bank_transfer', label: 'Bank transfer' },
+  { value: 'upi', label: 'UPI' },
+]
 
 export default function DonationDetail() {
   const { id } = useParams()
@@ -16,8 +23,21 @@ export default function DonationDetail() {
   const [form, setForm] = useState(null)
 
   useEffect(() => {
-    Promise.all([api(`/donations/${id}`), api('/donations/causes')])
-      .then(([detail, causeData]) => {
+    let cancelled = false
+
+    async function load() {
+      setError('')
+      setMessage('')
+      setDonation(null)
+      setForm(null)
+
+      try {
+        const [detail, causeData] = await Promise.all([
+          api(`/donations/${id}`),
+          api('/donations/causes'),
+        ])
+        if (cancelled) return
+
         setDonation(detail.donation)
         setCauses(causeData.causes)
         setForm({
@@ -30,14 +50,19 @@ export default function DonationDetail() {
           transaction_ref: detail.donation.transaction_ref || '',
           donated_at: toDateInput(detail.donation.donated_at),
           notes: detail.donation.notes || '',
-          status: detail.donation.status,
         })
-      })
-      .catch((err) => setError(err.message))
+      } catch (err) {
+        if (!cancelled) setError(err.message)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
-  const editable =
-    canWrite && donation && !(donation.channel === 'online' && donation.status === 'completed')
+  const editable = canWrite && donation?.channel === 'offline'
 
   function updateField(field) {
     return (event) => setForm((current) => ({ ...current, [field]: event.target.value }))
@@ -120,12 +145,8 @@ export default function DonationDetail() {
         </dl>
       </Card>
 
-      {message && (
-        <Alert tone="success">{message}</Alert>
-      )}
-      {error && (
-        <Alert tone="error">{error}</Alert>
-      )}
+      {message && <Alert tone="success">{message}</Alert>}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {editable ? (
         <Card>
@@ -160,6 +181,13 @@ export default function DonationDetail() {
                 </option>
               ))}
             </Select>
+            <Select label="Payment method" value={form.payment_method} onChange={updateField('payment_method')}>
+              {PAYMENT_METHODS.map((method) => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </Select>
             <Input
               label="Transaction reference"
               value={form.transaction_ref}
@@ -174,8 +202,8 @@ export default function DonationDetail() {
       ) : (
         <Card>
           <p className="text-sm text-slate-600">
-            {donation.channel === 'online' && donation.status === 'completed'
-              ? 'Completed online donations are read-only.'
+            {donation.channel === 'online'
+              ? 'Online donations are read-only in the admin portal.'
               : 'You have read-only access to this donation.'}
           </p>
         </Card>

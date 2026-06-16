@@ -14,7 +14,12 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Router;
 
-header('Access-Control-Allow-Origin: ' . (config('CORS_ORIGIN') ?: '*'));
+$corsOrigin = config('CORS_ORIGIN');
+if ($corsOrigin) {
+    header('Access-Control-Allow-Origin: ' . $corsOrigin);
+} elseif (config('APP_ENV') !== 'production') {
+    header('Access-Control-Allow-Origin: *');
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
@@ -39,6 +44,7 @@ try {
         $request->query,
         $request->body,
         $request->headers,
+        $request->rawBody,
     );
 
     $setup = new SetupController();
@@ -54,6 +60,7 @@ try {
     $router->get('/auth/me', fn ($req) => $auth->me($req));
     $router->get('/dashboard', fn ($req) => $auth->dashboard($req));
     $router->get('/users', fn ($req) => $users->index($req));
+    $router->get('/users/{id}', fn ($req, $params) => $users->show($req, $params));
     $router->post('/users', fn ($req) => $users->create($req));
     $router->put('/users/{id}', fn ($req, $params) => $users->update($req, $params));
     $router->patch('/users/{id}', fn ($req, $params) => $users->update($req, $params));

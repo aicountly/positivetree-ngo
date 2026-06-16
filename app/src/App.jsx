@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
-import { ProtectedRoute, PublicOnlyRoute, SetupRoute, WriteRoute } from './components/ProtectedRoute'
+import { ProtectedRoute, PublicOnlyRoute, SetupRoute, SuperadminRoute, WriteRoute } from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
 import DonationDetail from './pages/DonationDetail'
 import DonationForm from './pages/DonationForm'
@@ -25,23 +25,15 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="donations" element={<DonationsList />} />
-          <Route path="donations/:id" element={<DonationDetail />} />
-        </Route>
-      </Route>
-
-      <Route element={<ProtectedRoute roles={['superadmin', 'admin']} />}>
-        <Route element={<Layout />}>
           <Route element={<WriteRoute />}>
             <Route path="donations/new" element={<DonationForm />} />
           </Route>
-        </Route>
-      </Route>
-
-      <Route element={<ProtectedRoute roles={['superadmin']} />}>
-        <Route element={<Layout />}>
-          <Route path="users" element={<UsersList />} />
-          <Route path="users/new" element={<UserForm />} />
-          <Route path="users/:id" element={<UserForm />} />
+          <Route path="donations/:id" element={<DonationDetail />} />
+          <Route element={<SuperadminRoute />}>
+            <Route path="users" element={<UsersList />} />
+            <Route path="users/new" element={<UserForm />} />
+            <Route path="users/:id" element={<UserForm />} />
+          </Route>
         </Route>
       </Route>
 

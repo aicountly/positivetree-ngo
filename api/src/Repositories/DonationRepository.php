@@ -35,8 +35,8 @@ class DonationRepository
             $params['to'] = $filters['to'] . 'T23:59:59Z';
         }
         if (!empty($filters['search'])) {
-            $where[] = '(donor_name LIKE :search OR donor_email LIKE :search OR receipt_number LIKE :search OR transaction_ref LIKE :search)';
-            $params['search'] = '%' . $filters['search'] . '%';
+            $where[] = '(donor_name LIKE :search ESCAPE \'\\\' OR donor_email LIKE :search ESCAPE \'\\\' OR receipt_number LIKE :search ESCAPE \'\\\' OR transaction_ref LIKE :search ESCAPE \'\\\')';
+            $params['search'] = '%' . escapeLike($filters['search']) . '%';
         }
 
         $sqlWhere = implode(' AND ', $where);
@@ -173,27 +173,61 @@ class DonationRepository
 
     public function completeOnline(int $id, string $receiptNumber, string $paymentId, ?string $transactionRef = null): ?array
     {
-        $stmt = Database::connection()->prepare(
-            'UPDATE donations SET
-                receipt_number = :receipt_number,
-                razorpay_payment_id = :razorpay_payment_id,
-                transaction_ref = :transaction_ref,
-                status = :status,
-                payment_method = :payment_method,
-                updated_at = :updated_at
-             WHERE id = :id'
-        );
-        $stmt->execute([
-            'receipt_number' => $receiptNumber,
-            'razorpay_payment_id' => $paymentId,
-            'transaction_ref' => $transactionRef ?? $paymentId,
-            'status' => 'completed',
-            'payment_method' => 'razorpay',
-            'updated_at' => nowIso(),
-            'id' => $id,
-        ]);
+        $pdo = Database::connection();
+        $pdo->beginTransaction();
 
-        return $this->findById($id);
+        try {
+            $stmt = $pdo->prepare('SELECT * FROM donations WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+            $existing = $stmt->fetch();
+
+            if ($existing === false) {
+                $pdo->rollBack();
+                return null;
+            }
+
+            if ($existing['status'] === 'completed') {
+                $pdo->commit();
+                return $this->findById($id);
+            }
+
+            $update = $pdo->prepare(
+                'UPDATE donations SET
+                    receipt_number = :receipt_number,
+                    razorpay_payment_id = :razorpay_payment_id,
+                    transaction_ref = :transaction_ref,
+                    status = :status,
+                    payment_method = :payment_method,
+                    updated_at = :updated_at
+                 WHERE id = :id AND status = :pending'
+            );
+            $update->execute([
+                'receipt_number' => $receiptNumber,
+                'razorpay_payment_id' => $paymentId,
+                'transaction_ref' => $transactionRef ?? $paymentId,
+                'status' => 'completed',
+                'payment_method' => 'razorpay',
+                'updated_at' => nowIso(),
+                'id' => $id,
+                'pending' => 'pending',
+            ]);
+
+            if ($update->rowCount() === 0) {
+                $pdo->rollBack();
+                return $this->findById($id);
+            }
+
+            $pdo->commit();
+            return $this->findById($id);
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function markFailed(int $id): ?array
+    {
+        return $this->update($id, ['status' => 'failed']);
     }
 
     /** @return array{total_amount_paise: int, online_count: int, offline_count: int, recent: array<int, array>} */

@@ -108,20 +108,13 @@ class PaymentsController
             return;
         }
 
-        if ($donation['status'] === 'completed') {
-            Response::json(['donation' => $this->donations->findById((int) $donation['id'])]);
-            return;
-        }
-
-        $receiptNumber = $donation['receipt_number'] ?: $this->receiptNumbers->next();
-        $completed = $this->donations->completeOnline((int) $donation['id'], $receiptNumber, $paymentId);
-
+        $completed = $this->completeDonation((int) $donation['id'], $paymentId, $donation['receipt_number']);
         Response::json(['donation' => $completed]);
     }
 
     public function webhook(Request $request): void
     {
-        $payload = file_get_contents('php://input') ?: '';
+        $payload = $request->rawBody;
         $signature = $request->header('X-Razorpay-Signature', '');
 
         if (!$this->razorpay->verifyWebhookSignature($payload, $signature)) {
@@ -136,6 +129,20 @@ class PaymentsController
         }
 
         $eventType = $event['event'] ?? '';
+
+        if ($eventType === 'payment.failed') {
+            $payment = $event['payload']['payment']['entity'] ?? null;
+            if (is_array($payment)) {
+                $orderId = (string) ($payment['order_id'] ?? '');
+                $donation = $orderId !== '' ? $this->donations->findByRazorpayOrderId($orderId) : null;
+                if ($donation !== null && $donation['status'] === 'pending') {
+                    $this->donations->markFailed((int) $donation['id']);
+                }
+            }
+            Response::json(['status' => 'failed_noted']);
+            return;
+        }
+
         if ($eventType !== 'payment.captured') {
             Response::json(['status' => 'ignored']);
             return;
@@ -167,14 +174,20 @@ class PaymentsController
             return;
         }
 
-        if ($donation['status'] === 'completed') {
-            Response::json(['status' => 'already_processed']);
-            return;
+        $this->completeDonation((int) $donation['id'], $paymentId, $donation['receipt_number']);
+        Response::json(['status' => 'processed']);
+    }
+
+    private function completeDonation(int $id, string $paymentId, ?string $existingReceipt): array
+    {
+        $receiptNumber = $existingReceipt ?: $this->receiptNumbers->next();
+        $completed = $this->donations->completeOnline($id, $receiptNumber, $paymentId);
+
+        if ($completed === null) {
+            Response::error('Donation not found', 404);
+            exit;
         }
 
-        $receiptNumber = $donation['receipt_number'] ?: $this->receiptNumbers->next();
-        $this->donations->completeOnline((int) $donation['id'], $receiptNumber, $paymentId);
-
-        Response::json(['status' => 'processed']);
+        return $completed;
     }
 }

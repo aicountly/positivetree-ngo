@@ -1,12 +1,25 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { api, getToken, setToken } from '../api/client'
-
-const AuthContext = createContext(null)
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api, getToken, setToken, setUnauthorizedHandler } from '../api/client'
+import { AuthContext } from './useAuth'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [setupRequired, setSetupRequired] = useState(null)
+  const [setupRequired, setSetupRequired] = useState(undefined)
   const [loading, setLoading] = useState(true)
+  const [initError, setInitError] = useState('')
+
+  const logout = useCallback(() => {
+    setToken(null)
+    setUser(null)
+  }, [])
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUser(null)
+    })
+
+    return () => setUnauthorizedHandler(null)
+  }, [])
 
   const refreshSetupStatus = useCallback(async () => {
     const data = await api('/setup/status')
@@ -25,7 +38,6 @@ export function AuthProvider({ children }) {
       setUser(data.user)
       return data.user
     } catch {
-      setToken(null)
       setUser(null)
       return null
     }
@@ -33,9 +45,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function init() {
+      setInitError('')
+
       try {
         await refreshSetupStatus()
+      } catch (err) {
+        setInitError(err.message || 'Unable to reach the API')
+      }
+
+      try {
         await refreshUser()
+      } catch {
+        setUser(null)
       } finally {
         setLoading(false)
       }
@@ -52,6 +73,7 @@ export function AuthProvider({ children }) {
     setToken(data.token)
     setUser(data.user)
     setSetupRequired(false)
+    setInitError('')
     return data.user
   }, [])
 
@@ -63,12 +85,8 @@ export function AuthProvider({ children }) {
     setToken(data.token)
     setUser(data.user)
     setSetupRequired(false)
+    setInitError('')
     return data.user
-  }, [])
-
-  const logout = useCallback(() => {
-    setToken(null)
-    setUser(null)
   }, [])
 
   const value = useMemo(
@@ -76,6 +94,7 @@ export function AuthProvider({ children }) {
       user,
       loading,
       setupRequired,
+      initError,
       login,
       setup,
       logout,
@@ -84,16 +103,8 @@ export function AuthProvider({ children }) {
       isSuperadmin: user?.role === 'superadmin',
       canWrite: user?.role === 'superadmin' || user?.role === 'admin',
     }),
-    [user, loading, setupRequired, login, setup, logout, refreshUser, refreshSetupStatus],
+    [user, loading, setupRequired, initError, login, setup, logout, refreshUser, refreshSetupStatus],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
 }

@@ -1,9 +1,12 @@
 const API_BASE = '/api'
 
-let authToken = localStorage.getItem('pt_token') || null
+let onUnauthorized = null
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler
+}
 
 export function setToken(token) {
-  authToken = token
   if (token) {
     localStorage.setItem('pt_token', token)
   } else {
@@ -12,17 +15,18 @@ export function setToken(token) {
 }
 
 export function getToken() {
-  return authToken
+  return localStorage.getItem('pt_token') || null
 }
 
 export async function api(path, options = {}) {
+  const token = getToken()
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   }
 
-  if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
   }
 
   const response = await fetch(`${API_BASE}${path}`, {
@@ -34,6 +38,11 @@ export async function api(path, options = {}) {
   const isJson = contentType.includes('application/json')
   const data = isJson ? await response.json() : null
 
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+  }
+
   if (!response.ok) {
     const error = new Error(data?.error || 'Request failed')
     error.status = response.status
@@ -44,14 +53,17 @@ export async function api(path, options = {}) {
   return data
 }
 
-export function receiptUrl(id, format = 'pdf') {
-  return `${API_BASE}/donations/${id}/receipt?format=${format}&token=${encodeURIComponent(authToken || '')}`
-}
-
 export async function downloadReceipt(id) {
+  const token = getToken()
   const response = await fetch(`${API_BASE}/donations/${id}/receipt?format=pdf`, {
-    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
 
   if (!response.ok) {
     throw new Error('Unable to download receipt')
@@ -59,5 +71,13 @@ export async function downloadReceipt(id) {
 
   const blob = await response.blob()
   const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
+  const opened = window.open(url, '_blank')
+  if (!opened) {
+    const link = document.createElement('a')
+    link.href = url
+    link.target = '_blank'
+    link.rel = 'noopener'
+    link.click()
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
