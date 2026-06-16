@@ -9,6 +9,7 @@
   const errorEl = document.getElementById('donate-error');
   const submitBtn = document.getElementById('donate-submit');
   const receiptNumberEl = document.getElementById('donate-receipt-number');
+  const receiptDownloadEl = document.getElementById('donate-receipt-download');
   const closeButtons = modal.querySelectorAll('.modal-close');
 
   let selectedCause = '';
@@ -158,6 +159,12 @@
       formPanel.hidden = true;
       successPanel.hidden = false;
       receiptNumberEl.textContent = paymentResult.receipt_number || `#${paymentResult.id}`;
+      if (paymentResult.public_receipt_token && receiptDownloadEl) {
+        receiptDownloadEl.href = `/api/public/receipt/${paymentResult.public_receipt_token}?format=pdf`;
+        receiptDownloadEl.hidden = false;
+      } else if (receiptDownloadEl) {
+        receiptDownloadEl.hidden = true;
+      }
     } catch (error) {
       showError(error.message || 'Something went wrong. Please try again.');
     } finally {

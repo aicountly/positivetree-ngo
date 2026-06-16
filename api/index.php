@@ -12,8 +12,10 @@ if (PHP_VERSION_ID < 80100) {
 require __DIR__ . '/bootstrap.php';
 
 use App\Controllers\AuthController;
+use App\Controllers\DocumentSettingsController;
 use App\Controllers\DonationsController;
 use App\Controllers\PaymentsController;
+use App\Controllers\PublicReceiptController;
 use App\Controllers\SetupController;
 use App\Controllers\UsersController;
 use App\Database;
@@ -59,6 +61,8 @@ try {
     $users = new UsersController();
     $donations = new DonationsController();
     $payments = new PaymentsController();
+    $documentSettings = new DocumentSettingsController();
+    $publicReceipt = new PublicReceiptController();
 
     $router = new Router();
     $router->get('/setup/status', fn ($req) => $setup->status($req));
@@ -71,12 +75,21 @@ try {
     $router->post('/users', fn ($req) => $users->create($req));
     $router->put('/users/{id}', fn ($req, $params) => $users->update($req, $params));
     $router->patch('/users/{id}', fn ($req, $params) => $users->update($req, $params));
+    $router->get('/settings/documents', fn ($req) => $documentSettings->show($req));
+    $router->put('/settings/documents', fn ($req) => $documentSettings->update($req));
+    $router->post('/settings/documents/logo', fn ($req) => $documentSettings->uploadLogo($req));
+    $router->get('/settings/documents/preview/receipt', fn ($req) => $documentSettings->previewReceipt($req));
+    $router->get('/settings/documents/preview/certificate', fn ($req) => $documentSettings->previewCertificate($req));
+    $router->get('/public/receipt/{token}', fn ($req, $params) => $publicReceipt->show($req, $params));
     $router->get('/donations/causes', fn ($req) => $donations->causes($req));
     $router->get('/donations', fn ($req) => $donations->index($req));
     $router->post('/donations', fn ($req) => $donations->create($req));
     $router->get('/donations/{id}', fn ($req, $params) => $donations->show($req, $params));
     $router->put('/donations/{id}', fn ($req, $params) => $donations->update($req, $params));
     $router->get('/donations/{id}/receipt', fn ($req, $params) => $donations->receipt($req, $params));
+    $router->get('/donations/{id}/certificate', fn ($req, $params) => $donations->certificate($req, $params));
+    $router->post('/donations/{id}/approve-certificate', fn ($req, $params) => $donations->approveCertificate($req, $params));
+    $router->post('/donations/{id}/revoke-certificate', fn ($req, $params) => $donations->revokeCertificate($req, $params));
     $router->get('/payments/razorpay/config', fn ($req) => $payments->config($req));
     $router->post('/payments/razorpay/order', fn ($req) => $payments->createOrder($req));
     $router->post('/payments/razorpay/verify', fn ($req) => $payments->verify($req));

@@ -80,8 +80,16 @@ export async function api(path, options = {}) {
 }
 
 export async function downloadReceipt(id) {
+  await downloadDonationDocument(id, 'receipt')
+}
+
+export async function downloadCertificate(id) {
+  await downloadDonationDocument(id, 'certificate')
+}
+
+export async function openDonationDocument(id, type, format = 'html') {
   const token = getToken()
-  const response = await fetch(`${API_BASE}/donations/${id}/receipt?format=pdf`, {
+  const response = await fetch(`${API_BASE}/donations/${id}/${type}?format=${format}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
 
@@ -92,7 +100,86 @@ export async function downloadReceipt(id) {
   }
 
   if (!response.ok) {
-    throw new Error('Unable to download receipt')
+    throw new Error(`Unable to open ${type}`)
+  }
+
+  if (format === 'html') {
+    const html = await response.text()
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    return
+  }
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+export async function previewDocument(type) {
+  const token = getToken()
+  const response = await fetch(`${API_BASE}/settings/documents/preview/${type}?format=pdf`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
+
+  if (!response.ok) {
+    throw new Error('Unable to preview document')
+  }
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+export async function uploadDocumentLogo(file) {
+  const token = getToken()
+  const formData = new FormData()
+  formData.append('logo', file)
+
+  const response = await fetch(`${API_BASE}/settings/documents/logo`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+
+  const data = await response.json()
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || 'Unable to upload logo')
+  }
+
+  return data
+}
+
+async function downloadDonationDocument(id, type) {
+  const token = getToken()
+  const response = await fetch(`${API_BASE}/donations/${id}/${type}?format=pdf`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+
+  if (response.status === 401 && token) {
+    setToken(null)
+    onUnauthorized?.()
+    throw new Error('Session expired. Please sign in again.')
+  }
+
+  if (!response.ok) {
+    throw new Error(`Unable to download ${type}`)
   }
 
   const blob = await response.blob()

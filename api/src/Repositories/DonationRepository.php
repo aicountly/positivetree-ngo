@@ -98,18 +98,38 @@ class DonationRepository
         return $row ?: null;
     }
 
+    public function findByPublicToken(string $token): ?array
+    {
+        if ($token === '') {
+            return null;
+        }
+
+        $stmt = Database::connection()->prepare('SELECT * FROM donations WHERE public_receipt_token = :token');
+        $stmt->execute(['token' => $token]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public function create(array $data): array
     {
         $now = nowIso();
+        $status = $data['status'];
+        $publicToken = null;
+        if ($status === 'completed') {
+            $publicToken = $data['public_receipt_token'] ?? generatePublicReceiptToken();
+        }
+
         $stmt = Database::connection()->prepare(
             'INSERT INTO donations (
                 receipt_number, donor_name, donor_email, donor_phone, amount_paise, currency,
                 channel, cause, payment_method, transaction_ref, razorpay_order_id, razorpay_payment_id,
-                status, notes, donated_at, created_by, created_at, updated_at
+                status, notes, donated_at, created_by, created_at, updated_at,
+                certificate_status, public_receipt_token
             ) VALUES (
                 :receipt_number, :donor_name, :donor_email, :donor_phone, :amount_paise, :currency,
                 :channel, :cause, :payment_method, :transaction_ref, :razorpay_order_id, :razorpay_payment_id,
-                :status, :notes, :donated_at, :created_by, :created_at, :updated_at
+                :status, :notes, :donated_at, :created_by, :created_at, :updated_at,
+                :certificate_status, :public_receipt_token
             )'
         );
 
@@ -126,12 +146,14 @@ class DonationRepository
             'transaction_ref' => $data['transaction_ref'] ?? null,
             'razorpay_order_id' => $data['razorpay_order_id'] ?? null,
             'razorpay_payment_id' => $data['razorpay_payment_id'] ?? null,
-            'status' => $data['status'],
+            'status' => $status,
             'notes' => $data['notes'] ?? null,
             'donated_at' => $data['donated_at'] ?? $now,
             'created_by' => $data['created_by'] ?? null,
             'created_at' => $now,
             'updated_at' => $now,
+            'certificate_status' => $data['certificate_status'] ?? 'pending',
+            'public_receipt_token' => $publicToken,
         ]);
 
         return $this->findById((int) Database::connection()->lastInsertId());
@@ -191,6 +213,8 @@ class DonationRepository
                 return $this->findById($id);
             }
 
+            $publicToken = $existing['public_receipt_token'] ?: generatePublicReceiptToken();
+
             $update = $pdo->prepare(
                 'UPDATE donations SET
                     receipt_number = :receipt_number,
@@ -198,6 +222,11 @@ class DonationRepository
                     transaction_ref = :transaction_ref,
                     status = :status,
                     payment_method = :payment_method,
+                    public_receipt_token = :public_receipt_token,
+                    certificate_status = CASE
+                        WHEN certificate_status IS NULL OR certificate_status = \'\' THEN \'pending\'
+                        ELSE certificate_status
+                    END,
                     updated_at = :updated_at
                  WHERE id = :id AND status = :pending'
             );
@@ -207,6 +236,7 @@ class DonationRepository
                 'transaction_ref' => $transactionRef ?? $paymentId,
                 'status' => 'completed',
                 'payment_method' => 'razorpay',
+                'public_receipt_token' => $publicToken,
                 'updated_at' => nowIso(),
                 'id' => $id,
                 'pending' => 'pending',
@@ -228,6 +258,68 @@ class DonationRepository
     public function markFailed(int $id): ?array
     {
         return $this->update($id, ['status' => 'failed']);
+    }
+
+    public function approveCertificate(int $id, int $userId, string $certificateNumber): ?array
+    {
+        $existing = $this->findRawById($id);
+        if ($existing === null) {
+            return null;
+        }
+
+        if ($existing['status'] !== 'completed') {
+            return null;
+        }
+
+        if (($existing['certificate_status'] ?? '') === 'approved') {
+            return $this->findById($id);
+        }
+
+        $now = nowIso();
+        $stmt = Database::connection()->prepare(
+            'UPDATE donations SET
+                certificate_status = :certificate_status,
+                certificate_number = :certificate_number,
+                certificate_approved_at = :certificate_approved_at,
+                certificate_approved_by = :certificate_approved_by,
+                updated_at = :updated_at
+             WHERE id = :id'
+        );
+        $stmt->execute([
+            'certificate_status' => 'approved',
+            'certificate_number' => $certificateNumber,
+            'certificate_approved_at' => $now,
+            'certificate_approved_by' => $userId,
+            'updated_at' => $now,
+            'id' => $id,
+        ]);
+
+        return $this->findById($id);
+    }
+
+    public function revokeCertificate(int $id): ?array
+    {
+        $existing = $this->findRawById($id);
+        if ($existing === null) {
+            return null;
+        }
+
+        $stmt = Database::connection()->prepare(
+            'UPDATE donations SET
+                certificate_status = :certificate_status,
+                certificate_number = NULL,
+                certificate_approved_at = NULL,
+                certificate_approved_by = NULL,
+                updated_at = :updated_at
+             WHERE id = :id'
+        );
+        $stmt->execute([
+            'certificate_status' => 'pending',
+            'updated_at' => nowIso(),
+            'id' => $id,
+        ]);
+
+        return $this->findById($id);
     }
 
     /** @return array{total_amount_paise: int, online_count: int, offline_count: int, recent: array<int, array>} */
@@ -278,6 +370,13 @@ class DonationRepository
             'created_by' => $row['created_by'] !== null ? (int) $row['created_by'] : null,
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
+            'certificate_number' => $row['certificate_number'] ?? null,
+            'certificate_status' => $row['certificate_status'] ?? 'pending',
+            'certificate_approved_at' => $row['certificate_approved_at'] ?? null,
+            'certificate_approved_by' => isset($row['certificate_approved_by']) && $row['certificate_approved_by'] !== null
+                ? (int) $row['certificate_approved_by']
+                : null,
+            'public_receipt_token' => $row['public_receipt_token'] ?? null,
         ];
     }
 }

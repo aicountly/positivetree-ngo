@@ -4,31 +4,66 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use App\Repositories\DocumentSettingsRepository;
 
 class ReceiptPdfService
 {
+    public function __construct(
+        private readonly DocumentSettingsRepository $settings = new DocumentSettingsRepository(),
+        private readonly DocumentTemplateService $templates = new DocumentTemplateService(),
+        private readonly DocumentPdfService $pdf = new DocumentPdfService(),
+    ) {
+    }
+
     public function renderHtml(array $donation): string
     {
-        ob_start();
-        $amountInr = number_format($donation['amount_paise'] / 100, 2);
-        $donatedAt = $donation['donated_at'];
-        include __DIR__ . '/../../templates/receipt.html.php';
-        return (string) ob_get_clean();
+        $settings = $this->settings->get();
+        return $this->templates->renderReceiptHtml($settings, $donation);
     }
 
     public function renderPdf(array $donation): string
     {
-        $options = new Options();
-        $options->set('isRemoteEnabled', false);
-        $options->set('defaultFont', 'DejaVu Sans');
+        $settings = $this->settings->get();
+        $html = $this->templates->renderReceiptHtml($settings, $donation);
+        return $this->pdf->renderPdf($html, $settings['receipt']['print'] ?? []);
+    }
 
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($this->renderHtml($donation));
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
+    public function renderCertificateHtml(array $donation): string
+    {
+        $settings = $this->settings->get();
+        return $this->templates->renderCertificateHtml($settings, $donation);
+    }
 
-        return $dompdf->output();
+    public function renderCertificatePdf(array $donation): string
+    {
+        $settings = $this->settings->get();
+        $html = $this->templates->renderCertificateHtml($settings, $donation);
+        return $this->pdf->renderPdf($html, $settings['certificate']['print'] ?? []);
+    }
+
+    public function previewReceiptHtml(): string
+    {
+        $settings = $this->settings->get();
+        return $this->templates->renderReceiptHtml($settings, $this->templates->sampleDonation());
+    }
+
+    public function previewReceiptPdf(): string
+    {
+        $settings = $this->settings->get();
+        $html = $this->templates->renderReceiptHtml($settings, $this->templates->sampleDonation());
+        return $this->pdf->renderPdf($html, $settings['receipt']['print'] ?? []);
+    }
+
+    public function previewCertificateHtml(): string
+    {
+        $settings = $this->settings->get();
+        return $this->templates->renderCertificateHtml($settings, $this->templates->sampleDonation());
+    }
+
+    public function previewCertificatePdf(): string
+    {
+        $settings = $this->settings->get();
+        $html = $this->templates->renderCertificateHtml($settings, $this->templates->sampleDonation());
+        return $this->pdf->renderPdf($html, $settings['certificate']['print'] ?? []);
     }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api, downloadReceipt } from '../api/client'
+import { api, downloadCertificate, downloadReceipt, openDonationDocument } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import { Alert, Badge, Button, Card, Input, Select, Textarea } from '../components/ui'
 import { formatDateTime, formatInr, toDateInput } from '../utils/format'
@@ -20,6 +20,7 @@ export default function DonationDetail() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [approving, setApproving] = useState(false)
   const [form, setForm] = useState(null)
 
   useEffect(() => {
@@ -96,6 +97,46 @@ export default function DonationDetail() {
     }
   }
 
+  async function handleViewReceipt() {
+    try {
+      await openDonationDocument(id, 'receipt', 'html')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleCertificate() {
+    try {
+      await downloadCertificate(id)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleViewCertificate() {
+    try {
+      await openDonationDocument(id, 'certificate', 'html')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleApproveCertificate() {
+    setError('')
+    setMessage('')
+    setApproving(true)
+
+    try {
+      const result = await api(`/donations/${id}/approve-certificate`, { method: 'POST' })
+      setDonation(result.donation)
+      setMessage('Donation certificate approved.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setApproving(false)
+    }
+  }
+
   if (error && !donation) {
     return <p className="text-red-600">{error}</p>
   }
@@ -120,9 +161,14 @@ export default function DonationDetail() {
           </div>
         </div>
         {donation.status === 'completed' && donation.receipt_number && (
-          <Button variant="secondary" onClick={handleReceipt}>
-            Download receipt
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={handleViewReceipt}>
+              View receipt
+            </Button>
+            <Button variant="secondary" onClick={handleReceipt}>
+              Download receipt
+            </Button>
+          </div>
         )}
       </div>
 
@@ -144,6 +190,49 @@ export default function DonationDetail() {
           )}
         </dl>
       </Card>
+
+      {donation.status === 'completed' && (
+        <Card>
+          <h2 className="mb-3 text-lg font-semibold">Donation certificate</h2>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Badge tone={donation.certificate_status === 'approved' ? 'green' : 'amber'}>
+              {donation.certificate_status || 'pending'}
+            </Badge>
+            {donation.certificate_number && (
+              <span className="text-sm text-slate-600">{donation.certificate_number}</span>
+            )}
+          </div>
+
+          {donation.certificate_status === 'approved' ? (
+            <div className="space-y-3">
+              {donation.certificate_approved_at && (
+                <p className="text-sm text-slate-600">
+                  Approved on {formatDateTime(donation.certificate_approved_at)}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={handleViewCertificate}>
+                  View certificate
+                </Button>
+                <Button variant="secondary" onClick={handleCertificate}>
+                  Download certificate
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600">
+                Certificate will be available after Accounts Team approval.
+              </p>
+              {canWrite && (
+                <Button onClick={handleApproveCertificate} disabled={approving}>
+                  {approving ? 'Approving...' : 'Approve for certificate'}
+                </Button>
+              )}
+            </div>
+          )}
+        </Card>
+      )}
 
       {message && <Alert tone="success">{message}</Alert>}
       {error && <Alert tone="error">{error}</Alert>}

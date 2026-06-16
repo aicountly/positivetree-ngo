@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Database\Migrator;
+
 class Database
 {
     private static ?\PDO $pdo = null;
@@ -37,6 +39,8 @@ class Database
 
         if ($isNew) {
             self::migrate();
+        } else {
+            Migrator::run(self::$pdo);
         }
 
         return self::$pdo;
@@ -55,5 +59,6 @@ class Database
         }
 
         self::$pdo->exec($schema);
+        Migrator::run(self::$pdo);
     }
 }

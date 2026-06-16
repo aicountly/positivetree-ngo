@@ -20,9 +20,14 @@ function NavItems({ onNavigate }) {
         Donations
       </NavLink>
       {isSuperadmin && (
-        <NavLink to="/users" className={navLinkClass} onClick={onNavigate}>
-          Users
-        </NavLink>
+        <>
+          <NavLink to="/settings/documents" className={navLinkClass} onClick={onNavigate}>
+            Documents
+          </NavLink>
+          <NavLink to="/users" className={navLinkClass} onClick={onNavigate}>
+            Users
+          </NavLink>
+        </>
       )}
     </>
   )

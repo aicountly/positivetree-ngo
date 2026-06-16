@@ -82,7 +82,16 @@ curl -s https://your-domain/api/setup/status
 | GET | `/api/donations/causes` | JWT | Valid donation causes |
 | GET/POST | `/api/donations` | JWT | List / create offline donation |
 | GET/PUT | `/api/donations/{id}` | JWT | View / edit offline donation |
-| GET | `/api/donations/{id}/receipt` | JWT | PDF receipt |
+| GET | `/api/donations/{id}/receipt` | JWT | PDF/HTML receipt (configured template) |
+| GET | `/api/donations/{id}/certificate` | JWT | PDF/HTML certificate (approved only) |
+| POST | `/api/donations/{id}/approve-certificate` | admin+ | Approve donation for certificate |
+| POST | `/api/donations/{id}/revoke-certificate` | superadmin | Revoke certificate approval |
+| GET | `/api/public/receipt/{token}` | Public | PDF/HTML receipt via public token |
+| GET | `/api/settings/documents` | superadmin | Document settings (receipt + certificate) |
+| PUT | `/api/settings/documents` | superadmin | Save document settings |
+| POST | `/api/settings/documents/logo` | superadmin | Upload organization logo |
+| GET | `/api/settings/documents/preview/receipt` | superadmin | Preview receipt PDF |
+| GET | `/api/settings/documents/preview/certificate` | superadmin | Preview certificate PDF |
 | GET | `/api/users` | superadmin | List users |
 | GET | `/api/users/{id}` | superadmin | Get user |
 | POST | `/api/users` | superadmin | Create admin/viewer user |
@@ -94,9 +103,21 @@ curl -s https://your-domain/api/setup/status
 
 ## Roles
 
-- **superadmin** — manage users and donations
-- **admin** — manage offline donations
-- **viewer** — read-only access to donations and receipts
+- **superadmin** — manage users, donations, and document settings (`/app/settings/documents`)
+- **admin** — manage offline donations and approve donation certificates
+- **viewer** — read-only access to donations, receipts, and approved certificates
+
+## Document settings
+
+Superadmins configure receipt and donation certificate PDFs at `/app/settings/documents`:
+
+- Organization details and logo upload (`api/data/uploads/`)
+- Receipt/certificate wording, visible fields, signature, and print margins
+- Live PDF preview before saving
+
+Receipts are available immediately when a donation is completed. Donation certificates require Accounts Team approval (`POST /api/donations/{id}/approve-certificate`) before download.
+
+Online donors receive a public receipt download link on the thank-you screen via `public_receipt_token` returned from payment verification.
 
 ## Security notes
 

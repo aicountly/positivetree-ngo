@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import { ProtectedRoute, PublicOnlyRoute, SetupRoute, SuperadminRoute, WriteRoute } from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
+import DocumentSettings from './pages/DocumentSettings'
 import DonationDetail from './pages/DonationDetail'
 import DonationForm from './pages/DonationForm'
 import DonationsList from './pages/DonationsList'
@@ -30,6 +31,7 @@ export default function App() {
           </Route>
           <Route path="donations/:id" element={<DonationDetail />} />
           <Route element={<SuperadminRoute />}>
+            <Route path="settings/documents" element={<DocumentSettings />} />
             <Route path="users" element={<UsersList />} />
             <Route path="users/new" element={<UserForm />} />
             <Route path="users/:id" element={<UserForm />} />

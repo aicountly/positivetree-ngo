@@ -53,6 +53,8 @@ export default function DonationsList() {
         setData(donationsResult)
       } catch (err) {
         if (!cancelled) setError(err.message)
+      } finally {
+        if (!cancelled) setLoading(false)
       }
     }
 
@@ -137,6 +139,7 @@ export default function DonationsList() {
                 <th className="py-2 pr-4">Amount</th>
                 <th className="py-2 pr-4">Channel</th>
                 <th className="py-2 pr-4">Status</th>
+                <th className="py-2 pr-4">Certificate</th>
                 <th className="py-2 pr-4">Date</th>
               </tr>
             </thead>
@@ -160,6 +163,15 @@ export default function DonationsList() {
                     <Badge tone={donation.status === 'completed' ? 'green' : 'amber'}>
                       {donation.status}
                     </Badge>
+                  </td>
+                  <td className="py-3 pr-4">
+                    {donation.status === 'completed' ? (
+                      <Badge tone={donation.certificate_status === 'approved' ? 'green' : 'amber'}>
+                        {donation.certificate_status || 'pending'}
+                      </Badge>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="py-3 pr-4">{formatDateTime(donation.donated_at)}</td>
                 </tr>

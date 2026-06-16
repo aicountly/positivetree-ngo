@@ -9,6 +9,7 @@ use App\DonationCauses;
 use App\Http\Request;
 use App\Http\Response;
 use App\Repositories\DonationRepository;
+use App\Services\CertificateNumberService;
 use App\Services\ReceiptNumberService;
 use App\Services\ReceiptPdfService;
 
@@ -21,6 +22,7 @@ class DonationsController
         private readonly DonationRepository $donations = new DonationRepository(),
         private readonly Auth $auth = new Auth(),
         private readonly ReceiptNumberService $receiptNumbers = new ReceiptNumberService(),
+        private readonly CertificateNumberService $certificateNumbers = new CertificateNumberService(),
         private readonly ReceiptPdfService $receiptPdf = new ReceiptPdfService(),
     ) {
     }
@@ -181,6 +183,85 @@ class DonationsController
         header('Content-Type: application/pdf');
         header('Content-Disposition: inline; filename="receipt-' . $donation['receipt_number'] . '.pdf"');
         echo $this->receiptPdf->renderPdf($donation);
+    }
+
+    public function certificate(Request $request, array $params): void
+    {
+        $this->auth->requireUser($request, ['superadmin', 'admin', 'viewer']);
+        $id = (int) ($params['id'] ?? 0);
+        $donation = $this->donations->findRawById($id);
+
+        if ($donation === null) {
+            Response::error('Donation not found', 404);
+            return;
+        }
+
+        if (($donation['certificate_status'] ?? '') !== 'approved' || empty($donation['certificate_number'])) {
+            Response::error('Certificate is not available for this donation', 422);
+            return;
+        }
+
+        $format = $request->query['format'] ?? 'pdf';
+
+        if ($format === 'html') {
+            header('Content-Type: text/html; charset=utf-8');
+            echo $this->receiptPdf->renderCertificateHtml($donation);
+            return;
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="certificate-' . $donation['certificate_number'] . '.pdf"');
+        echo $this->receiptPdf->renderCertificatePdf($donation);
+    }
+
+    public function approveCertificate(Request $request, array $params): void
+    {
+        $user = $this->auth->requireUser($request, ['superadmin', 'admin']);
+        $this->auth->requireWriteAccess($user);
+
+        $id = (int) ($params['id'] ?? 0);
+        $donation = $this->donations->findById($id);
+
+        if ($donation === null) {
+            Response::error('Donation not found', 404);
+            return;
+        }
+
+        if ($donation['status'] !== 'completed') {
+            Response::error('Only completed donations can be approved for certificate', 422);
+            return;
+        }
+
+        if ($donation['certificate_status'] === 'approved') {
+            Response::json(['donation' => $donation]);
+            return;
+        }
+
+        $certificateNumber = $this->certificateNumbers->next();
+        $updated = $this->donations->approveCertificate($id, (int) $user['id'], $certificateNumber);
+
+        if ($updated === null) {
+            Response::error('Unable to approve certificate', 422);
+            return;
+        }
+
+        Response::json(['donation' => $updated]);
+    }
+
+    public function revokeCertificate(Request $request, array $params): void
+    {
+        $this->auth->requireUser($request, ['superadmin']);
+
+        $id = (int) ($params['id'] ?? 0);
+        $donation = $this->donations->findById($id);
+
+        if ($donation === null) {
+            Response::error('Donation not found', 404);
+            return;
+        }
+
+        $updated = $this->donations->revokeCertificate($id);
+        Response::json(['donation' => $updated]);
     }
 
     public function causes(Request $request): void

@@ -121,3 +121,18 @@ function escapeLike(string $term): string
 {
     return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term);
 }
+
+function generatePublicReceiptToken(): string
+{
+    return bin2hex(random_bytes(16));
+}
+
+function uploadsDir(): string
+{
+    $dir = __DIR__ . '/data/uploads';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0775, true);
+    }
+
+    return $dir;
+}
