@@ -11,13 +11,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          ssh-private-key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
 
-      - name: Add SSH host key
-        run: ssh-keyscan -H "${{ secrets.CPANEL_SSH_HOST }}" >> ~/.ssh/known_hosts
+      - name: Install and build React app
+        run: |
+          npm ci --prefix app
+          npm run build --prefix app
+
+      # CPANEL_SSH_PRIVATE_KEY must be unencrypted (no passphrase).
+      # On cPanel/Linux: ssh-keygen -t ed25519 -C "github-actions-positivetree" -f deploy_key -N ""
+      # Do NOT use -N '""' on Linux — that sets a passphrase, not an empty one.
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null; then
+            echo "::error::SSH key is invalid or passphrase-protected. Regenerate on the server with: ssh-keygen -t ed25519 -C github-actions-positivetree -f deploy_key -N \"\""
+            exit 1
+          fi
+          ssh-keyscan -H "${{ secrets.CPANEL_SSH_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy with rsync
         env:
@@ -27,5 +48,6 @@ jobs:
         run: |
           rsync -avz --delete \
             --exclude='.env' \
-            ./public/ \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
+            ./public_html/ \
             "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}"

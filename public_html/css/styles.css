@@ -1,0 +1,5 @@
+/* Custom styles for the marketing site. Tailwind handles most layout and utilities. */
+
+html {
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Positive Tree NGO" />
+    <title>Positive Tree NGO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                500: "#22c55e",
+                600: "#16a34a",
+                700: "#15803d",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <header class="border-b border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-lg font-semibold text-brand-700">Positive Tree NGO</a>
+        <nav class="flex items-center gap-6 text-sm font-medium text-slate-600">
+          <a href="#" class="transition hover:text-brand-700">About</a>
+          <a href="#" class="transition hover:text-brand-700">Programs</a>
+          <a href="#" class="transition hover:text-brand-700">Contact</a>
+          <a
+            href="/app/"
+            class="rounded-lg bg-brand-600 px-4 py-2 text-white transition hover:bg-brand-700"
+          >
+            App
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 py-24">
+      <section class="mx-auto max-w-2xl text-center">
+        <p class="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-600">
+          Marketing site
+        </p>
+        <h1 class="mb-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          Positive Tree NGO
+        </h1>
+        <p class="mb-8 text-lg text-slate-600">
+          Foundation placeholder. Replace this with your marketing content after deployment is
+          stable.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="#"
+            class="rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+          >
+            Get started
+          </a>
+          <a
+            href="/app/"
+            class="rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+          >
+            Go to app
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-slate-200 bg-white">
+      <div class="mx-auto max-w-6xl px-6 py-8 text-center text-sm text-slate-500">
+        &copy; <span id="year"></span> Positive Tree NGO. All rights reserved.
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

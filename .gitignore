@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Vite build output inside public_html
+public_html/app/assets/
+public_html/app/index.html

@@ -1,0 +1,9 @@
+{
+  "name": "positivetree-ngo",
+  "private": true,
+  "scripts": {
+    "dev:app": "npm run dev --prefix app",
+    "build:app": "npm run build --prefix app",
+    "preview:app": "npm run preview --prefix app"
+  }
+}
