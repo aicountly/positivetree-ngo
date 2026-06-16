@@ -18,14 +18,25 @@ export function getToken() {
   return localStorage.getItem('pt_token') || null
 }
 
+const PUBLIC_AUTH_PATHS = new Set([
+  '/auth/login',
+  '/setup',
+  '/setup/status',
+  '/payments/razorpay/config',
+  '/payments/razorpay/order',
+  '/payments/razorpay/verify',
+  '/webhooks/razorpay',
+])
+
 export async function api(path, options = {}) {
   const token = getToken()
+  const isPublicAuthPath = PUBLIC_AUTH_PATHS.has(path)
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   }
 
-  if (token) {
+  if (token && !isPublicAuthPath) {
     headers.Authorization = `Bearer ${token}`
   }
 
@@ -47,16 +58,18 @@ export async function api(path, options = {}) {
     }
   }
 
-  if (response.status === 401 && token) {
+  if (response.status === 401 && token && !isPublicAuthPath) {
     setToken(null)
     onUnauthorized?.()
   }
 
   if (!response.ok) {
     const fallback =
-      response.status === 500
-        ? 'Server error (500). The API may be missing Composer dependencies or PHP SQLite support.'
-        : 'Request failed'
+      response.status === 401
+        ? 'Session expired or not authorized. Please sign in again.'
+        : response.status === 500
+          ? 'Server error (500). The API may be missing Composer dependencies or PHP SQLite support.'
+          : 'Request failed'
     const error = new Error(data?.error || fallback)
     error.status = response.status
     error.data = data

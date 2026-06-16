@@ -29,7 +29,7 @@ class AuthController
 
         $user = $this->auth->attemptLogin($email, $password);
         if ($user === null) {
-            Response::error('Invalid credentials', 401);
+            Response::error('Invalid email or password', 401);
             return;
         }
 

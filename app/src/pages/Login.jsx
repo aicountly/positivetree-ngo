@@ -28,8 +28,13 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
       <Card className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <Link to="/" className="text-lg font-semibold text-green-700">
-            Positive Tree NGO
+          <Link to="/" className="inline-flex flex-col items-center gap-3">
+            <img
+              src={`${import.meta.env.BASE_URL}favicon.png`}
+              alt="Positive Tree NGO"
+              className="h-24 w-24 object-contain"
+            />
+            <span className="text-lg font-semibold text-green-700">Positive Tree NGO</span>
           </Link>
           <h1 className="mt-4 text-2xl font-bold">Sign in</h1>
           <p className="mt-1 text-sm text-slate-600">Access the donation management portal</p>

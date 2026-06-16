@@ -1,6 +1,10 @@
 RewriteEngine On
 RewriteBase /api/
 
+# Pass Authorization header to PHP (required on Apache/cPanel)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # Block direct access to sensitive files
 RewriteRule ^data/ - [F,L]
 RewriteRule ^\.env$ - [F,L]

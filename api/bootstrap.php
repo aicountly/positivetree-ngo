@@ -44,6 +44,29 @@ function loadEnv(string $path): void
 
 loadEnv(__DIR__ . '/.env');
 
+function bootstrapAuthorizationHeader(): void
+{
+    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        return;
+    }
+
+    if (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $_SERVER['HTTP_AUTHORIZATION'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        return;
+    }
+
+    if (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        if (!empty($headers['Authorization'])) {
+            $_SERVER['HTTP_AUTHORIZATION'] = $headers['Authorization'];
+        } elseif (!empty($headers['authorization'])) {
+            $_SERVER['HTTP_AUTHORIZATION'] = $headers['authorization'];
+        }
+    }
+}
+
+bootstrapAuthorizationHeader();
+
 function config(string $key, ?string $default = null): ?string
 {
     $value = $_ENV[$key] ?? getenv($key);
