@@ -101,34 +101,65 @@
       <img src="/images/2024/01/temple-funding.jpg" alt="Ashram for Spiritual Growth" />
       <h3>Ashram for Spiritual Growth</h3>
       <p>Nurture your soul and others by supporting the Ashram, a space for spiritual growth and peace.</p>
-      <a href="#" class="btn btn--primary" data-donate-placeholder>Donate to Build The Ashram</a>
+      <a href="#" class="btn btn--primary" data-donate-cause="Ashram for Spiritual Growth">Donate to Build The Ashram</a>
     </div>
     <div class="service-box">
       <img src="/images/2023/07/oldage-home.jpg" alt="Old Age Home for Seniors" />
       <h3>Old Age Home for Seniors</h3>
       <p>Help us care for our beloved seniors by contributing to the Old Age Home, where they can live with dignity and love.</p>
-      <a href="#" class="btn btn--primary" data-donate-placeholder>Donate to Care for Seniors</a>
+      <a href="#" class="btn btn--primary" data-donate-cause="Old Age Home for Seniors">Donate to Care for Seniors</a>
     </div>
     <div class="service-box">
       <img src="/images/2023/07/education.webp" alt="Providing Education to Needy" />
       <h3>Providing Education to Needy</h3>
       <p>Empowering futures through education for those in need. Together, we can make a difference.</p>
-      <a href="#" class="btn btn--primary" data-donate-placeholder>Donate to Educate the Future</a>
+      <a href="#" class="btn btn--primary" data-donate-cause="Providing Education to Needy">Donate to Educate the Future</a>
     </div>
     <div class="service-box">
       <img src="/images/2024/01/food-donation.jpg" alt="Food Programs" />
       <h3>Food Programs to Support Those in Need</h3>
       <p>Your contribution can feed a family and bring hope to those in need through our Food Programs.</p>
-      <a href="#" class="btn btn--primary" data-donate-placeholder>Donate to Feed the Hungry</a>
+      <a href="#" class="btn btn--primary" data-donate-cause="Food Programs to Support Those in Need">Donate to Feed the Hungry</a>
     </div>
   </div>
 </section>
 
 <div id="donate-modal" class="modal-overlay" role="dialog" aria-labelledby="modal-title" aria-modal="true">
-  <div class="modal">
-    <h3 id="modal-title">Payment Coming Soon</h3>
-    <p>Online donation processing is being set up. Please contact us at +91 6384184900 or info@positivetree.ngo to contribute in the meantime.</p>
-    <button type="button" class="btn btn--primary modal-close">Close</button>
+  <div class="modal donate-modal">
+    <button type="button" class="modal-close" aria-label="Close">&times;</button>
+    <div id="donate-form-panel">
+      <h3 id="modal-title">Make a Donation</h3>
+      <p class="donate-modal__cause-label">Supporting: <strong id="donate-cause-display"></strong></p>
+      <form id="donate-form" class="donate-form">
+        <label>
+          Amount (INR)
+          <input type="number" name="amount_inr" min="1" step="1" required placeholder="500" />
+        </label>
+        <label>
+          Full name
+          <input type="text" name="donor_name" required />
+        </label>
+        <label>
+          Email
+          <input type="email" name="donor_email" required />
+        </label>
+        <label>
+          Phone (optional)
+          <input type="tel" name="donor_phone" />
+        </label>
+        <p id="donate-error" class="donate-form__error" hidden></p>
+        <button type="submit" class="btn btn--primary" id="donate-submit">Proceed to payment</button>
+      </form>
+      <p class="donate-modal__fallback">
+        Need help? Call +91 6384184900 or email info@positivetree.ngo
+      </p>
+    </div>
+    <div id="donate-success-panel" hidden>
+      <h3>Thank you for your donation!</h3>
+      <p>Your receipt number is <strong id="donate-receipt-number"></strong>.</p>
+      <p>A confirmation has been recorded for your contribution.</p>
+      <button type="button" class="btn btn--primary modal-close">Close</button>
+    </div>
   </div>
 </div>
 
@@ -182,7 +213,7 @@
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
   <script src="/js/nav.js"></script>
-    <script src="/js/donate-modal.js"></script>
+    <script src="/js/donate-checkout.js"></script>
 
 
 </body>

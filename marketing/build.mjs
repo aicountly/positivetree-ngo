@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -81,6 +81,22 @@ ${replaceAll(partials.footer, vars)}
 `;
 }
 
+function copyMarketingScripts() {
+  const jsDir = join(__dirname, 'js');
+  const outJsDir = join(outRoot, 'js');
+  mkdirSync(outJsDir, { recursive: true });
+
+  if (!existsSync(jsDir)) {
+    return;
+  }
+
+  for (const file of readdirSync(jsDir)) {
+    if (!file.endsWith('.js')) continue;
+    cpSync(join(jsDir, file), join(outJsDir, file));
+    console.log(`  copied js/${file}`);
+  }
+}
+
 function writeOutput(relativePath, html) {
   const fullPath = join(outRoot, relativePath);
   mkdirSync(dirname(fullPath), { recursive: true });
@@ -113,11 +129,15 @@ function postUrl(post, basePath) {
 function renderPostCard(post, basePath) {
   const url = postUrl(post, basePath);
   const excerpt = post.excerpt || excerptFromHtml(post.html);
+  const alt = post.title.replace(/"/g, '&quot;');
+  const image = post.image || '/images/2023/07/about.png';
   return `<article class="post-card">
-  <div class="post-card__image"></div>
+  <a href="${url}" class="post-card__image" aria-hidden="true" tabindex="-1">
+    <img src="${image}" alt="${alt}" loading="lazy" />
+  </a>
   <div class="post-card__body">
     <p class="post-card__date">${formatDate(post.date)}</p>
-    <h3 class="post-card__title">${post.title}</h3>
+    <h3 class="post-card__title"><a href="${url}">${post.title}</a></h3>
     <p class="post-card__excerpt">${excerpt}</p>
     <a href="${url}" class="post-card__link">Read more →</a>
   </div>
@@ -176,11 +196,12 @@ const staticPages = [
     page: 'donate.html',
     pageKey: 'donate',
     title: `Donate | ${SITE_TITLE}`,
-    extraScripts: '  <script src="/js/donate-modal.js"></script>\n',
+    extraScripts: '  <script src="/js/donate-checkout.js"></script>\n',
   },
 ];
 
 console.log('Building marketing site…');
+copyMarketingScripts();
 
 for (const cfg of staticPages) {
   const body = readPage(cfg.page);

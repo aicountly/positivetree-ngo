@@ -179,6 +179,40 @@ const relationships = relTuples.map((t) => {
   return { objectId: Number(f[0]), termTaxonomyId: Number(f[1]) };
 });
 
+const metaBlob = parseInsertRows('tdm_postmeta');
+const metaTuples = splitSqlTuples(metaBlob);
+const postmeta = metaTuples.map((t) => {
+  const f = parseTuple(t);
+  return { postId: Number(f[1]), key: f[2], value: f[3] };
+});
+
+const thumbnailByPostId = {};
+const attachedFileById = {};
+
+for (const meta of postmeta) {
+  if (meta.key === '_thumbnail_id') {
+    thumbnailByPostId[meta.postId] = Number(meta.value);
+  }
+  if (meta.key === '_wp_attached_file') {
+    attachedFileById[meta.postId] = meta.value;
+  }
+}
+
+function featuredImagePath(postId) {
+  const attachmentId = thumbnailByPostId[postId];
+  if (!attachmentId) return null;
+  const file = attachedFileById[attachmentId];
+  if (!file) return null;
+  return `/images/${file}`;
+}
+
+// Category-based fallback images when no featured image is set
+const categoryFallbackImages = {
+  'programs-for-children': '/images/2023/07/education.webp',
+  'programs-for-elderly': '/images/2023/07/oldage-home.jpg',
+  events: '/images/2023/07/eyecare.jpg',
+};
+
 function stripHtml(html) {
   return html
     .replace(/<!--[\s\S]*?-->/g, '')
@@ -212,9 +246,14 @@ const postsWithCategories = blogPosts.map((post) => {
   const categories = rels
     .map((r) => categoryMap[r.termTaxonomyId])
     .filter(Boolean);
+  const image =
+    featuredImagePath(post.id) ||
+    categoryFallbackImages[categories[0]?.slug] ||
+    '/images/2023/07/about.png';
   return {
     ...post,
     categories,
+    image,
     plainText: stripHtml(post.content),
     html: simplifyContent(post.content),
   };
@@ -235,6 +274,7 @@ const output = {
     date: p.date,
     excerpt: stripHtml(p.excerpt),
     html: p.html,
+    image: p.image,
     categories: p.categories.map((c) => ({ name: c.name, slug: c.slug })),
   })),
   categories: Object.values(categoryMap).map((t) => ({

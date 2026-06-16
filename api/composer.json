@@ -1,0 +1,14 @@
+{
+  "name": "positivetree/donation-api",
+  "description": "Donation management API for Positive Tree NGO",
+  "require": {
+    "php": ">=8.1",
+    "razorpay/razorpay": "^2.9",
+    "dompdf/dompdf": "^3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}

@@ -9,3 +9,10 @@ dist/
 # Vite build output inside public_html
 public_html/app/assets/
 public_html/app/index.html
+
+# API runtime files
+public_html/api/data/*.sqlite
+public_html/api/.env
+public_html/api/vendor/
+api/vendor/
+composer.phar

@@ -3,11 +3,13 @@
   "private": true,
   "scripts": {
     "dev:app": "npm run dev --prefix app",
+    "dev:api": "npm run copy:api && php -S localhost:8080 -t public_html public_html/router-dev.php",
     "build:app": "npm run build --prefix app",
     "preview:app": "npm run preview --prefix app",
+    "copy:api": "node scripts/copy-api.mjs",
     "extract:content": "node marketing/extract-content.mjs",
     "download:images": "node marketing/download-images.mjs",
     "build:marketing": "node marketing/build.mjs",
-    "build": "npm run build:marketing && npm run build:app"
+    "build": "npm run build:marketing && npm run copy:api && npm run build:app"
   }
 }
