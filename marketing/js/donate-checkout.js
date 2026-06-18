@@ -268,10 +268,37 @@
   }
 
   function buildCallbackUrl(reference) {
-    const base = `${window.location.origin}/donate/`;
-    const url = new URL(base);
-    url.searchParams.set('donation_ref', reference);
+    const returnTo = `${window.location.origin}/donate/`;
+    const url = new URL(`${DONATE_API_BASE}/payments/return`);
+    url.searchParams.set('ref', reference);
+    url.searchParams.set('return_to', returnTo);
     return url.toString();
+  }
+
+  function buildThankYouUrl(reference, payment, extraParams) {
+    const url = new URL(`${window.location.origin}/donate/`);
+    url.searchParams.set('donation_ref', reference);
+    url.searchParams.set('payment_complete', '1');
+    if (payment?.razorpay_payment_id) {
+      url.searchParams.set('razorpay_payment_id', payment.razorpay_payment_id);
+    }
+    if (payment?.razorpay_order_id) {
+      url.searchParams.set('razorpay_order_id', payment.razorpay_order_id);
+    }
+    if (extraParams) {
+      Object.entries(extraParams).forEach(([key, value]) => {
+        if (value) url.searchParams.set(key, value);
+      });
+    }
+    return url.toString();
+  }
+
+  function redirectToThankYou(reference, payment, extraParams) {
+    if (paymentSettled) return;
+    paymentSettled = true;
+    stopPolling();
+    closeRazorpayOverlay();
+    window.location.assign(buildThankYouUrl(reference, payment, extraParams));
   }
 
   function showSuccessPanel(payment, fallbackAmount, fallbackCurrency, fallbackCause) {
@@ -375,13 +402,19 @@
 
   async function handlePaymentReturn() {
     const params = new URLSearchParams(window.location.search);
+    const reference = params.get('donation_ref');
+    const paymentComplete = params.get('payment_complete') === '1';
     const paymentId = params.get('razorpay_payment_id');
     const orderId = params.get('razorpay_order_id');
     const signature = params.get('razorpay_signature');
-    const reference = params.get('donation_ref');
     const pending = readPendingDonation();
 
-    if (!paymentId || !orderId || !signature || !reference) {
+    if (!reference) {
+      return;
+    }
+
+    const hasRazorpayReturn = Boolean(paymentId && orderId && signature);
+    if (!paymentComplete && !hasRazorpayReturn) {
       return;
     }
 
@@ -393,17 +426,33 @@
     paymentSettled = false;
 
     try {
-      const token = await ensureCsrf();
-      const payment = await resolveCompletedPayment(
-        reference,
-        {
-          razorpay_order_id: orderId,
-          razorpay_payment_id: paymentId,
-          razorpay_signature: signature,
-        },
-        token,
-        pending,
-      );
+      let payment = null;
+
+      if (paymentComplete) {
+        payment = await fetchPaymentStatus(reference, false);
+        if (!payment || payment.status !== 'completed') {
+          payment = await fetchPaymentStatus(reference, true);
+        }
+      } else if (paymentId && orderId && signature) {
+        const token = await ensureCsrf();
+        payment = await resolveCompletedPayment(
+          reference,
+          {
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature,
+          },
+          token,
+          pending,
+        );
+      }
+
+      if (!payment || payment.status !== 'completed') {
+        throw new Error(
+          'Payment verification failed. If the amount was deducted, contact info@positivetree.ngo with reference '
+            + reference + '.',
+        );
+      }
 
       showSuccessPanel(
         payment,
@@ -428,15 +477,27 @@
     return new Promise((resolve, reject) => {
       let dismissHandled = false;
 
-      const finishWithPayment = (payment) => {
+      const finishWithPayment = (payment, extraParams) => {
         if (paymentSettled) return;
-        showSuccessPanel(
-          payment,
-          intent.payment.amount,
-          intent.payment.currency,
-          pending.cause,
-        );
+        redirectToThankYou(reference, payment, extraParams);
         resolve(payment);
+      };
+
+      const handleRazorpaySuccess = async (response) => {
+        try {
+          stopPolling();
+          const payment = await verifyHandlerPayment(reference, response, token);
+          finishWithPayment(payment, {
+            razorpay_signature: response.razorpay_signature,
+          });
+        } catch (err) {
+          const synced = await fetchPaymentStatus(reference, true);
+          if (synced && synced.status === 'completed') {
+            finishWithPayment(synced);
+            return;
+          }
+          reject(err);
+        }
       };
 
       const checkout = new window.Razorpay({
@@ -455,15 +516,7 @@
         },
         notes: intent.razorpay.notes || {},
         theme: { color: '#a8763e' },
-        handler: async (response) => {
-          try {
-            stopPolling();
-            const payment = await verifyHandlerPayment(reference, response, token);
-            finishWithPayment(payment);
-          } catch (err) {
-            reject(err);
-          }
-        },
+        handler: handleRazorpaySuccess,
         modal: {
           ondismiss: () => {
             if (paymentSettled || dismissHandled) return;
@@ -491,6 +544,8 @@
       });
 
       activeCheckout = checkout;
+
+      checkout.on('payment.success', handleRazorpaySuccess);
 
       checkout.on('payment.failed', (response) => {
         stopPolling();
