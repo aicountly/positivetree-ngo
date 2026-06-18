@@ -38,27 +38,37 @@
     <div id="donate-form-panel">
       <h3 id="modal-title">Make a Donation</h3>
       <p class="donate-modal__cause-label">Supporting: <strong id="donate-cause-display"></strong></p>
-      <form id="donate-form" class="donate-form">
-        <label>
-          Amount (INR)
-          <input type="number" name="amount_inr" min="1" step="1" required placeholder="500" />
-        </label>
+      <form id="donate-form" class="donate-form" novalidate>
+        <div class="donate-form__row">
+          <label class="donate-form__currency">
+            Currency
+            <select name="currency" id="donate-currency" required>
+              <option value="INR" selected>INR &mdash; Indian Rupee</option>
+              <option value="USD">USD &mdash; US Dollar</option>
+            </select>
+          </label>
+          <label class="donate-form__amount">
+            Amount <span id="donate-currency-label">(INR)</span>
+            <input type="number" name="amount" id="donate-amount" min="1" step="1" required placeholder="500" inputmode="decimal" />
+          </label>
+        </div>
         <label>
           Full name
-          <input type="text" name="donor_name" required />
+          <input type="text" name="donor_name" required autocomplete="name" />
         </label>
         <label>
           Email
-          <input type="email" name="donor_email" required />
+          <input type="email" name="donor_email" required autocomplete="email" />
         </label>
         <label>
           Phone (optional)
-          <input type="tel" name="donor_phone" />
+          <input type="tel" name="donor_phone" autocomplete="tel" />
         </label>
         <label>
           PAN (optional)
-          <input type="text" name="donor_pan" maxlength="10" placeholder="ABCDE1234F" autocapitalize="characters" />
+          <input type="text" name="donor_pan" maxlength="10" placeholder="ABCDE1234F" autocapitalize="characters" autocomplete="off" />
         </label>
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="donate-form__honeypot" />
         <p id="donate-error" class="donate-form__error" hidden></p>
         <button type="submit" class="btn btn--primary" id="donate-submit">Proceed to payment</button>
       </form>
@@ -68,10 +78,22 @@
     </div>
     <div id="donate-success-panel" hidden>
       <h3>Thank you for your donation!</h3>
-      <p>Your receipt number is <strong id="donate-receipt-number"></strong>.</p>
-      <p><a id="donate-receipt-download" href="#" target="_blank" rel="noopener">Download Receipt (PDF)</a></p>
-      <p class="donate-modal__note">Donation certificate will be issued after verification by our Accounts Team.</p>
-      <p>A confirmation has been recorded for your contribution.</p>
+      <p class="donate-success__lead">Your contribution to <strong id="donate-success-cause"></strong> has been received.</p>
+      <dl class="donate-success__details">
+        <div>
+          <dt>Transaction ID</dt>
+          <dd><strong id="donate-txn-id"></strong></dd>
+        </div>
+        <div>
+          <dt>Reference</dt>
+          <dd id="donate-receipt-number"></dd>
+        </div>
+        <div>
+          <dt>Amount</dt>
+          <dd id="donate-success-amount"></dd>
+        </div>
+      </dl>
+      <p class="donate-success__note">A confirmation has been recorded for your contribution. Please save the transaction ID for your records.</p>
       <button type="button" class="btn btn--primary modal-close">Close</button>
     </div>
   </div>
