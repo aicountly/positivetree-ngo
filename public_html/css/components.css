@@ -643,6 +643,25 @@
   margin: 0;
 }
 
+.donate-form__confirming {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.875rem;
+}
+
+.donate-form__confirming p {
+  margin: 0 0 0.35rem;
+}
+
+.donate-form__confirming p:last-child {
+  margin-bottom: 0;
+  color: #334155;
+}
+
 .donate-modal__fallback {
   margin-top: 1rem;
   margin-bottom: 0;

@@ -6,32 +6,40 @@
  * upstream URL is intentionally kept out of any visible UI copy: the user only
  * sees "Razorpay Secure Checkout". The cause of the selected card is sent as
  * `project_name`, and `client_name` is hard-coded to "Positive Tree".
+ *
+ * UPI QR payments often complete without firing Razorpay's handler callback, so
+ * we poll /payments/{reference}?sync=1 until the server confirms capture.
  */
 (function () {
   const DONATE_API_BASE = 'https://sispl.org/api';
   const DONATING_CLIENT_NAME = 'Positive Tree';
+  const POLL_INTERVAL_MS = 2500;
+  const POLL_MAX_MS = 120000;
 
   const modal = document.getElementById('donate-modal');
   if (!modal) return;
 
   const formPanel = document.getElementById('donate-form-panel');
   const successPanel = document.getElementById('donate-success-panel');
+  const confirmingPanel = document.getElementById('donate-confirming-panel');
   const form = document.getElementById('donate-form');
   const causeDisplay = document.getElementById('donate-cause-display');
   const errorEl = document.getElementById('donate-error');
   const submitBtn = document.getElementById('donate-submit');
   const currencyEl = document.getElementById('donate-currency');
   const currencyLabel = document.getElementById('donate-currency-label');
-  const amountEl = document.getElementById('donate-amount');
   const successCauseEl = document.getElementById('donate-success-cause');
   const txnIdEl = document.getElementById('donate-txn-id');
   const receiptNumberEl = document.getElementById('donate-receipt-number');
   const successAmountEl = document.getElementById('donate-success-amount');
+  const successDatetimeEl = document.getElementById('donate-success-datetime');
   const closeButtons = modal.querySelectorAll('.modal-close');
 
   let selectedCause = '';
   let csrfToken = '';
   let razorpayLoaded = false;
+  let activePollTimer = null;
+  let paymentSettled = false;
 
   function showError(message) {
     if (!errorEl) return;
@@ -39,9 +47,21 @@
     errorEl.hidden = !message;
   }
 
+  function showConfirming(show) {
+    if (confirmingPanel) confirmingPanel.hidden = !show;
+    if (submitBtn) submitBtn.hidden = show;
+  }
+
   function setSubmitting(isSubmitting) {
     submitBtn.disabled = isSubmitting;
     submitBtn.textContent = isSubmitting ? 'Processing...' : 'Proceed to payment';
+  }
+
+  function stopPolling() {
+    if (activePollTimer !== null) {
+      clearInterval(activePollTimer);
+      activePollTimer = null;
+    }
   }
 
   function openModal(cause) {
@@ -52,13 +72,17 @@
     if (currencyEl) currencyEl.value = 'INR';
     updateCurrencyLabel();
     showError('');
+    showConfirming(false);
     setSubmitting(false);
+    paymentSettled = false;
+    stopPolling();
     formPanel.hidden = false;
     successPanel.hidden = true;
     modal.classList.add('active');
   }
 
   function closeModal() {
+    stopPolling();
     modal.classList.remove('active');
   }
 
@@ -180,6 +204,166 @@
     }
   }
 
+  function formatDateTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return isoString;
+    try {
+      return new Intl.DateTimeFormat('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Asia/Kolkata',
+      }).format(date);
+    } catch (_err) {
+      return date.toLocaleString('en-IN');
+    }
+  }
+
+  function showSuccessPanel(payment, fallbackAmount, fallbackCurrency) {
+    paymentSettled = true;
+    stopPolling();
+    showConfirming(false);
+    showError('');
+    formPanel.hidden = true;
+    successPanel.hidden = false;
+    if (successCauseEl) successCauseEl.textContent = payment.project_name || selectedCause;
+    if (txnIdEl) txnIdEl.textContent = payment.razorpay_payment_id || '';
+    if (receiptNumberEl) receiptNumberEl.textContent = payment.reference || payment.public_reference || '';
+    if (successAmountEl) {
+      successAmountEl.textContent = formatAmount(
+        payment.amount ?? fallbackAmount,
+        payment.currency || fallbackCurrency,
+      );
+    }
+    if (successDatetimeEl) {
+      successDatetimeEl.textContent = formatDateTime(payment.updated_at || payment.created_at);
+    }
+  }
+
+  async function fetchPaymentStatus(reference, syncFromGateway) {
+    const query = syncFromGateway ? '?sync=1' : '';
+    const result = await donateApi(`/payments/${encodeURIComponent(reference)}${query}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    return result.payment || null;
+  }
+
+  function startPaymentPolling(reference, onCompleted) {
+    stopPolling();
+    const startedAt = Date.now();
+
+    const poll = async () => {
+      if (paymentSettled) {
+        stopPolling();
+        return;
+      }
+
+      try {
+        const payment = await fetchPaymentStatus(reference, true);
+        if (payment && payment.status === 'completed') {
+          stopPolling();
+          onCompleted(payment);
+        }
+      } catch (_err) {
+        // Keep polling through transient network errors.
+      }
+
+      if (Date.now() - startedAt >= POLL_MAX_MS) {
+        stopPolling();
+      }
+    };
+
+    poll();
+    activePollTimer = setInterval(poll, POLL_INTERVAL_MS);
+  }
+
+  async function verifyHandlerPayment(reference, razorpayResponse, token) {
+    const verified = await donateApi('/payments/verify', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': token,
+      },
+      body: JSON.stringify({
+        reference,
+        razorpay_order_id: razorpayResponse.razorpay_order_id,
+        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+        razorpay_signature: razorpayResponse.razorpay_signature,
+      }),
+    });
+    return verified.payment || {};
+  }
+
+  function openRazorpayCheckout(intent, donorName, donorEmail, donorPhone, reference, token) {
+    return new Promise((resolve, reject) => {
+      let dismissPollStarted = false;
+
+      const finishWithPayment = (payment) => {
+        if (paymentSettled) return;
+        showSuccessPanel(payment, intent.payment.amount, intent.payment.currency);
+        resolve(payment);
+      };
+
+      const checkout = new window.Razorpay({
+        key: intent.razorpay.key_id,
+        amount: intent.razorpay.amount,
+        currency: intent.razorpay.currency,
+        name: 'Positive Tree Foundation',
+        description: selectedCause,
+        order_id: intent.razorpay.order_id,
+        prefill: {
+          name: donorName,
+          email: donorEmail,
+          contact: donorPhone || undefined,
+        },
+        notes: intent.razorpay.notes || {},
+        theme: { color: '#a8763e' },
+        handler: async (response) => {
+          try {
+            stopPolling();
+            const payment = await verifyHandlerPayment(reference, response, token);
+            finishWithPayment(payment);
+          } catch (err) {
+            reject(err);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            if (paymentSettled) return;
+
+            showConfirming(true);
+            showError('');
+
+            if (dismissPollStarted) return;
+            dismissPollStarted = true;
+
+            startPaymentPolling(reference, finishWithPayment);
+
+            setTimeout(() => {
+              if (paymentSettled) return;
+              stopPolling();
+              showConfirming(false);
+              reject(new Error(
+                'Payment was not confirmed yet. If the amount was deducted, note your transaction ID and contact info@positivetree.ngo with reference '
+                  + reference + '.',
+              ));
+            }, POLL_MAX_MS);
+          },
+        },
+      });
+
+      checkout.on('payment.failed', (response) => {
+        stopPolling();
+        reject(new Error(response?.error?.description || 'Payment failed'));
+      });
+
+      startPaymentPolling(reference, finishWithPayment);
+      checkout.open();
+    });
+  }
+
   document.querySelectorAll('[data-donate-cause]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
@@ -199,12 +383,14 @@
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     showError('');
+    showConfirming(false);
     setSubmitting(true);
+    paymentSettled = false;
+    stopPolling();
 
     try {
       const formData = new FormData(form);
 
-      // Honeypot — silently bail if a bot filled it.
       if (String(formData.get('website') || '').trim() !== '') {
         throw new Error('Submission blocked. Please refresh and try again.');
       }
@@ -234,27 +420,11 @@
       if (donorPan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(donorPan)) {
         throw new Error('PAN must match the format ABCDE1234F.');
       }
-
       if (!selectedCause) {
         throw new Error('Please select a cause to donate to.');
       }
 
       const token = await ensureCsrf();
-
-      const intentPayload = {
-        client_name: DONATING_CLIENT_NAME,
-        project_name: selectedCause,
-        amount,
-        currency,
-        donor_name: donorName,
-        donor_email: donorEmail,
-        donor_phone: donorPhone || null,
-        donor_pan: donorPan || null,
-        request_id: createRequestId(),
-        // Honeypot fields expected by the upstream validator.
-        website: '',
-        company: '',
-      };
 
       const intent = await donateApi('/payments', {
         method: 'POST',
@@ -263,71 +433,43 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': token,
         },
-        body: JSON.stringify(intentPayload),
+        body: JSON.stringify({
+          client_name: DONATING_CLIENT_NAME,
+          project_name: selectedCause,
+          amount,
+          currency,
+          donor_name: donorName,
+          donor_email: donorEmail,
+          donor_phone: donorPhone || null,
+          donor_pan: donorPan || null,
+          request_id: createRequestId(),
+          website: '',
+          company: '',
+        }),
       });
 
-      if (!intent.razorpay || !intent.razorpay.order_id) {
+      if (!intent.razorpay || !intent.razorpay.order_id || !intent.payment?.reference) {
         throw new Error('Unable to start payment. Please try again.');
       }
 
       await loadRazorpayScript();
-
-      const razorpayResponse = await new Promise((resolve, reject) => {
-        const checkout = new window.Razorpay({
-          key: intent.razorpay.key_id,
-          amount: intent.razorpay.amount,
-          currency: intent.razorpay.currency,
-          name: 'Positive Tree Foundation',
-          description: selectedCause,
-          order_id: intent.razorpay.order_id,
-          prefill: {
-            name: donorName,
-            email: donorEmail,
-            contact: donorPhone || undefined,
-          },
-          notes: intent.razorpay.notes || {},
-          theme: { color: '#a8763e' },
-          handler: (response) => resolve(response),
-          modal: {
-            ondismiss: () => reject(new Error('Payment cancelled')),
-          },
-        });
-
-        checkout.on('payment.failed', (response) => {
-          reject(new Error(response?.error?.description || 'Payment failed'));
-        });
-
-        checkout.open();
-      });
-
-      const verified = await donateApi('/payments/verify', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': token,
-        },
-        body: JSON.stringify({
-          reference: intent.payment.reference,
-          razorpay_order_id: razorpayResponse.razorpay_order_id,
-          razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-          razorpay_signature: razorpayResponse.razorpay_signature,
-        }),
-      });
-
-      const payment = verified.payment || {};
-      formPanel.hidden = true;
-      successPanel.hidden = false;
-      if (successCauseEl) successCauseEl.textContent = payment.project_name || selectedCause;
-      if (txnIdEl) txnIdEl.textContent = payment.razorpay_payment_id || razorpayResponse.razorpay_payment_id || '';
-      if (receiptNumberEl) receiptNumberEl.textContent = payment.reference || '';
-      if (successAmountEl) {
-        successAmountEl.textContent = formatAmount(payment.amount ?? amount, payment.currency || currency);
-      }
+      await openRazorpayCheckout(
+        intent,
+        donorName,
+        donorEmail,
+        donorPhone,
+        intent.payment.reference,
+        token,
+      );
     } catch (err) {
-      showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
+      if (!paymentSettled) {
+        showConfirming(false);
+        showError(err && err.message ? err.message : 'Something went wrong. Please try again.');
+      }
     } finally {
-      setSubmitting(false);
+      if (!paymentSettled) {
+        setSubmitting(false);
+      }
     }
   });
 })();

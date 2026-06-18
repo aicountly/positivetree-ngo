@@ -162,6 +162,10 @@
         </label>
         <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="donate-form__honeypot" />
         <p id="donate-error" class="donate-form__error" hidden></p>
+        <div id="donate-confirming-panel" class="donate-form__confirming" hidden>
+          <p><strong>Confirming your payment…</strong></p>
+          <p>If you paid via UPI QR, this can take a few seconds. Please keep this window open.</p>
+        </div>
         <button type="submit" class="btn btn--primary" id="donate-submit">Proceed to payment</button>
       </form>
       <p class="donate-modal__fallback">
@@ -183,6 +187,10 @@
         <div>
           <dt>Amount</dt>
           <dd id="donate-success-amount"></dd>
+        </div>
+        <div>
+          <dt>Date &amp; time</dt>
+          <dd id="donate-success-datetime"></dd>
         </div>
       </dl>
       <p class="donate-success__note">A confirmation has been recorded for your contribution. Please save the transaction ID for your records.</p>
