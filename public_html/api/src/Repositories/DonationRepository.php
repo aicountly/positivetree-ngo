@@ -96,22 +96,6 @@ class DonationRepository
         return $row ?: null;
     }
 
-    public function findByRazorpayPaymentId(string $paymentId): ?array
-    {
-        $stmt = Database::connection()->prepare('SELECT * FROM donations WHERE razorpay_payment_id = :id');
-        $stmt->execute(['id' => $paymentId]);
-        $row = $stmt->fetch();
-        return $row ?: null;
-    }
-
-    public function findByRazorpayOrderId(string $orderId): ?array
-    {
-        $stmt = Database::connection()->prepare('SELECT * FROM donations WHERE razorpay_order_id = :id');
-        $stmt->execute(['id' => $orderId]);
-        $row = $stmt->fetch();
-        return $row ?: null;
-    }
-
     public function findByPublicToken(string $token): ?array
     {
         if ($token === '') {
@@ -206,73 +190,6 @@ class DonationRepository
         Database::connection()->prepare($sql)->execute($params);
 
         return $this->findById($id);
-    }
-
-    public function completeOnline(int $id, string $receiptNumber, string $paymentId, ?string $transactionRef = null): ?array
-    {
-        $pdo = Database::connection();
-        $pdo->beginTransaction();
-
-        try {
-            $stmt = $pdo->prepare('SELECT * FROM donations WHERE id = :id');
-            $stmt->execute(['id' => $id]);
-            $existing = $stmt->fetch();
-
-            if ($existing === false) {
-                $pdo->rollBack();
-                return null;
-            }
-
-            if ($existing['status'] === 'completed') {
-                $pdo->commit();
-                return $this->findById($id);
-            }
-
-            $publicToken = $existing['public_receipt_token'] ?: generatePublicReceiptToken();
-
-            $update = $pdo->prepare(
-                'UPDATE donations SET
-                    receipt_number = :receipt_number,
-                    razorpay_payment_id = :razorpay_payment_id,
-                    transaction_ref = :transaction_ref,
-                    status = :status,
-                    payment_method = :payment_method,
-                    public_receipt_token = :public_receipt_token,
-                    certificate_status = CASE
-                        WHEN certificate_status IS NULL OR certificate_status = \'\' THEN \'pending\'
-                        ELSE certificate_status
-                    END,
-                    updated_at = :updated_at
-                 WHERE id = :id AND status = :pending'
-            );
-            $update->execute([
-                'receipt_number' => $receiptNumber,
-                'razorpay_payment_id' => $paymentId,
-                'transaction_ref' => $transactionRef ?? $paymentId,
-                'status' => 'completed',
-                'payment_method' => 'razorpay',
-                'public_receipt_token' => $publicToken,
-                'updated_at' => nowIso(),
-                'id' => $id,
-                'pending' => 'pending',
-            ]);
-
-            if ($update->rowCount() === 0) {
-                $pdo->rollBack();
-                return $this->findById($id);
-            }
-
-            $pdo->commit();
-            return $this->findById($id);
-        } catch (\Throwable $e) {
-            $pdo->rollBack();
-            throw $e;
-        }
-    }
-
-    public function markFailed(int $id): ?array
-    {
-        return $this->update($id, ['status' => 'failed']);
     }
 
     public function approveCertificate(int $id, int $userId, string $certificateNumber): ?array

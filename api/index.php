@@ -14,7 +14,6 @@ require __DIR__ . '/bootstrap.php';
 use App\Controllers\AuthController;
 use App\Controllers\DocumentSettingsController;
 use App\Controllers\DonationsController;
-use App\Controllers\PaymentsController;
 use App\Controllers\PublicReceiptController;
 use App\Controllers\SetupController;
 use App\Controllers\UsersController;
@@ -60,7 +59,6 @@ try {
     $auth = new AuthController();
     $users = new UsersController();
     $donations = new DonationsController();
-    $payments = new PaymentsController();
     $documentSettings = new DocumentSettingsController();
     $publicReceipt = new PublicReceiptController();
 
@@ -92,10 +90,8 @@ try {
     $router->get('/donations/{id}/certificate', fn ($req, $params) => $donations->certificate($req, $params));
     $router->post('/donations/{id}/approve-certificate', fn ($req, $params) => $donations->approveCertificate($req, $params));
     $router->post('/donations/{id}/revoke-certificate', fn ($req, $params) => $donations->revokeCertificate($req, $params));
-    $router->get('/payments/razorpay/config', fn ($req) => $payments->config($req));
-    $router->post('/payments/razorpay/order', fn ($req) => $payments->createOrder($req));
-    $router->post('/payments/razorpay/verify', fn ($req) => $payments->verify($req));
-    $router->post('/webhooks/razorpay', fn ($req) => $payments->webhook($req));
+    // Online donations (Razorpay) are handled by https://sispl.org/api — see public_html/js/donate-checkout.js.
+    // The admin API only manages offline donations (cash, cheque, UPI, bank transfer) recorded by staff.
 
     $router->dispatch($request);
 } catch (Throwable $e) {

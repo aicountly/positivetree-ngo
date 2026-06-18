@@ -1,6 +1,6 @@
 # Positive Tree Donation API
 
-PHP + SQLite REST API for donation receipt management and Razorpay online payments.
+PHP + SQLite REST API for **offline** donation receipt and certificate management. Online (Razorpay) donations are processed by the SISPL API at `https://sispl.org/api` — the public donate form on `/donate/` posts straight there. This admin API only ingests offline donations recorded by staff (cash, cheque, UPI, bank transfer) plus receipt/certificate generation for them.
 
 ## Requirements
 
@@ -31,9 +31,6 @@ Create `public_html/api/.env` from `api/.env.example`:
 
 ```env
 JWT_SECRET=your-long-random-secret
-RAZORPAY_KEY_ID=rzp_test_...
-RAZORPAY_KEY_SECRET=...
-RAZORPAY_WEBHOOK_SECRET=...
 APP_ENV=development
 CORS_ORIGIN=http://localhost:5173
 ```
@@ -102,10 +99,8 @@ curl -s https://your-domain/api/setup/status
 | GET | `/api/users/{id}` | superadmin | Get user |
 | POST | `/api/users` | superadmin | Create admin/viewer user |
 | PUT/PATCH | `/api/users/{id}` | superadmin | Update user |
-| GET | `/api/payments/razorpay/config` | Public | Razorpay public key |
-| POST | `/api/payments/razorpay/order` | Public | Create payment order |
-| POST | `/api/payments/razorpay/verify` | Public | Verify payment |
-| POST | `/api/webhooks/razorpay` | Webhook | Payment capture/failure handler |
+
+> Online donations (Razorpay) are intentionally **not** part of this API anymore. The public `/donate/` form posts directly to `https://sispl.org/api` (the SISPL Razorpay merchant). See `public_html/js/donate-checkout.js`.
 
 ## Roles
 
@@ -179,6 +174,6 @@ If Gotenberg is unreachable at request time, the renderer logs the failure to th
 ## Security notes
 
 - `.htaccess` blocks direct access to `.env`, `data/`, and schema files on Apache
-- Online donations cannot be edited manually in the admin portal except for donor PAN
-- Razorpay webhooks verify HMAC signatures against the raw request body
+- Legacy online donations imported into the local SQLite cannot be edited manually in the admin portal except for donor PAN
 - JWT must use HS256
+- Razorpay credentials live in the SISPL API only (`server-php/.env` on `sispl.org`); they are not used by this admin API

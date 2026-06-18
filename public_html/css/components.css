@@ -596,12 +596,45 @@
   color: var(--color-text);
 }
 
-.donate-form input {
+.donate-form input,
+.donate-form select {
   width: 100%;
   padding: 0.65rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font: inherit;
+  background: var(--color-white);
+}
+
+.donate-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  padding-right: 2.25rem;
+}
+
+.donate-form__row {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .donate-form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.donate-form__honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .donate-form__error {
@@ -614,6 +647,57 @@
   margin-top: 1rem;
   margin-bottom: 0;
   font-size: 0.85rem;
+}
+
+#donate-success-panel {
+  text-align: left;
+}
+
+.donate-success__lead {
+  margin-bottom: 1rem;
+}
+
+.donate-success__details {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.donate-success__details > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.donate-success__details dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.donate-success__details dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.donate-success__details dd strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.donate-success__note {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
 }
 
 /* Single post */
