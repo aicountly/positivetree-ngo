@@ -1,20 +1,20 @@
 /*
  * Positive Tree donation checkout.
  *
- * Donations are processed by the SISPL Razorpay merchant account so we POST the
- * intent + verification to https://sispl.org/api directly from the browser. The
- * upstream URL is intentionally kept out of any visible UI copy: the user only
- * sees "Razorpay Secure Checkout". The cause of the selected card is sent as
- * `project_name`, and `client_name` is hard-coded to "Positive Tree".
+ * Donations are processed by the SISPL Razorpay merchant account. After Razorpay
+ * confirms payment, the browser returns to /donate/ with payment params and we
+ * show the thank-you panel with transaction details.
  *
- * UPI QR payments often complete without firing Razorpay's handler callback, so
- * we poll /payments/{reference}?sync=1 until the server confirms capture.
+ * UPI QR often never fires Razorpay's handler while the QR modal stays open, so
+ * we use redirect:true (Razorpay navigates back after capture) plus background
+ * polling that closes the Razorpay overlay when the server confirms payment.
  */
 (function () {
   const DONATE_API_BASE = 'https://sispl.org/api';
   const DONATING_CLIENT_NAME = 'Positive Tree';
-  const POLL_INTERVAL_MS = 2500;
-  const POLL_MAX_MS = 120000;
+  const PENDING_KEY = 'positivetree_donate_pending';
+  const POLL_INTERVAL_MS = 2000;
+  const POLL_MAX_MS = 180000;
 
   const modal = document.getElementById('donate-modal');
   if (!modal) return;
@@ -29,6 +29,7 @@
   const currencyEl = document.getElementById('donate-currency');
   const currencyLabel = document.getElementById('donate-currency-label');
   const successCauseEl = document.getElementById('donate-success-cause');
+  const successDonorEl = document.getElementById('donate-success-donor');
   const txnIdEl = document.getElementById('donate-txn-id');
   const receiptNumberEl = document.getElementById('donate-receipt-number');
   const successAmountEl = document.getElementById('donate-success-amount');
@@ -40,6 +41,7 @@
   let razorpayLoaded = false;
   let activePollTimer = null;
   let paymentSettled = false;
+  let activeCheckout = null;
 
   function showError(message) {
     if (!errorEl) return;
@@ -64,6 +66,25 @@
     }
   }
 
+  function closeRazorpayOverlay() {
+    try {
+      if (activeCheckout && typeof activeCheckout.close === 'function') {
+        activeCheckout.close();
+      }
+    } catch (_err) {
+      // Razorpay may already be closed.
+    }
+    activeCheckout = null;
+    document.querySelectorAll('.razorpay-container').forEach((node) => node.remove());
+    document.body.style.overflow = '';
+  }
+
+  function openSuccessModal() {
+    modal.classList.add('active');
+    formPanel.hidden = true;
+    successPanel.hidden = false;
+  }
+
   function openModal(cause) {
     selectedCause = cause;
     causeDisplay.textContent = cause;
@@ -76,6 +97,7 @@
     setSubmitting(false);
     paymentSettled = false;
     stopPolling();
+    closeRazorpayOverlay();
     formPanel.hidden = false;
     successPanel.hidden = true;
     modal.classList.add('active');
@@ -83,6 +105,7 @@
 
   function closeModal() {
     stopPolling();
+    closeRazorpayOverlay();
     modal.classList.remove('active');
   }
 
@@ -219,16 +242,56 @@
     }
   }
 
-  function showSuccessPanel(payment, fallbackAmount, fallbackCurrency) {
+  function savePendingDonation(data) {
+    try {
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify(data));
+    } catch (_err) {
+      // Ignore storage failures.
+    }
+  }
+
+  function readPendingDonation() {
+    try {
+      const raw = sessionStorage.getItem(PENDING_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function clearPendingDonation() {
+    try {
+      sessionStorage.removeItem(PENDING_KEY);
+    } catch (_err) {
+      // Ignore storage failures.
+    }
+  }
+
+  function buildCallbackUrl(reference) {
+    const base = `${window.location.origin}/donate/`;
+    const url = new URL(base);
+    url.searchParams.set('donation_ref', reference);
+    return url.toString();
+  }
+
+  function showSuccessPanel(payment, fallbackAmount, fallbackCurrency, fallbackCause) {
     paymentSettled = true;
     stopPolling();
+    closeRazorpayOverlay();
     showConfirming(false);
     showError('');
-    formPanel.hidden = true;
-    successPanel.hidden = false;
-    if (successCauseEl) successCauseEl.textContent = payment.project_name || selectedCause;
+    openSuccessModal();
+
+    const cause = payment.project_name || fallbackCause || selectedCause;
+    if (successCauseEl) successCauseEl.textContent = cause;
+    if (successDonorEl) {
+      successDonorEl.textContent = payment.donor_name || '';
+      successDonorEl.closest('div').hidden = !payment.donor_name;
+    }
     if (txnIdEl) txnIdEl.textContent = payment.razorpay_payment_id || '';
-    if (receiptNumberEl) receiptNumberEl.textContent = payment.reference || payment.public_reference || '';
+    if (receiptNumberEl) {
+      receiptNumberEl.textContent = payment.reference || payment.public_reference || '';
+    }
     if (successAmountEl) {
       successAmountEl.textContent = formatAmount(
         payment.amount ?? fallbackAmount,
@@ -238,6 +301,8 @@
     if (successDatetimeEl) {
       successDatetimeEl.textContent = formatDateTime(payment.updated_at || payment.created_at);
     }
+
+    clearPendingDonation();
   }
 
   async function fetchPaymentStatus(reference, syncFromGateway) {
@@ -296,13 +361,81 @@
     return verified.payment || {};
   }
 
-  function openRazorpayCheckout(intent, donorName, donorEmail, donorPhone, reference, token) {
+  async function resolveCompletedPayment(reference, razorpayResponse, token, pending) {
+    try {
+      return await verifyHandlerPayment(reference, razorpayResponse, token);
+    } catch (_verifyError) {
+      const synced = await fetchPaymentStatus(reference, true);
+      if (synced && synced.status === 'completed') {
+        return synced;
+      }
+      throw _verifyError;
+    }
+  }
+
+  async function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get('razorpay_payment_id');
+    const orderId = params.get('razorpay_order_id');
+    const signature = params.get('razorpay_signature');
+    const reference = params.get('donation_ref');
+    const pending = readPendingDonation();
+
+    if (!paymentId || !orderId || !signature || !reference) {
+      return;
+    }
+
+    history.replaceState({}, '', `${window.location.pathname}`);
+
+    openSuccessModal();
+    showConfirming(true);
+    showError('');
+    paymentSettled = false;
+
+    try {
+      const token = await ensureCsrf();
+      const payment = await resolveCompletedPayment(
+        reference,
+        {
+          razorpay_order_id: orderId,
+          razorpay_payment_id: paymentId,
+          razorpay_signature: signature,
+        },
+        token,
+        pending,
+      );
+
+      showSuccessPanel(
+        payment,
+        pending?.amount,
+        pending?.currency,
+        pending?.cause,
+      );
+    } catch (err) {
+      showConfirming(false);
+      formPanel.hidden = false;
+      successPanel.hidden = true;
+      showError(
+        err && err.message
+          ? err.message
+          : 'Payment verification failed. If the amount was deducted, contact info@positivetree.ngo with reference '
+            + reference + '.',
+      );
+    }
+  }
+
+  function openRazorpayCheckout(intent, donorName, donorEmail, donorPhone, reference, token, pending) {
     return new Promise((resolve, reject) => {
-      let dismissPollStarted = false;
+      let dismissHandled = false;
 
       const finishWithPayment = (payment) => {
         if (paymentSettled) return;
-        showSuccessPanel(payment, intent.payment.amount, intent.payment.currency);
+        showSuccessPanel(
+          payment,
+          intent.payment.amount,
+          intent.payment.currency,
+          pending.cause,
+        );
         resolve(payment);
       };
 
@@ -313,6 +446,8 @@
         name: 'Positive Tree Foundation',
         description: selectedCause,
         order_id: intent.razorpay.order_id,
+        callback_url: buildCallbackUrl(reference),
+        redirect: true,
         prefill: {
           name: donorName,
           email: donorEmail,
@@ -331,22 +466,23 @@
         },
         modal: {
           ondismiss: () => {
-            if (paymentSettled) return;
+            if (paymentSettled || dismissHandled) return;
+            dismissHandled = true;
 
             showConfirming(true);
             showError('');
 
-            if (dismissPollStarted) return;
-            dismissPollStarted = true;
-
-            startPaymentPolling(reference, finishWithPayment);
+            startPaymentPolling(reference, (payment) => {
+              finishWithPayment(payment);
+            });
 
             setTimeout(() => {
               if (paymentSettled) return;
               stopPolling();
+              closeRazorpayOverlay();
               showConfirming(false);
               reject(new Error(
-                'Payment was not confirmed yet. If the amount was deducted, note your transaction ID and contact info@positivetree.ngo with reference '
+                'Payment was not confirmed yet. If the amount was deducted, contact info@positivetree.ngo with reference '
                   + reference + '.',
               ));
             }, POLL_MAX_MS);
@@ -354,8 +490,11 @@
         },
       });
 
+      activeCheckout = checkout;
+
       checkout.on('payment.failed', (response) => {
         stopPolling();
+        closeRazorpayOverlay();
         reject(new Error(response?.error?.description || 'Payment failed'));
       });
 
@@ -387,6 +526,7 @@
     setSubmitting(true);
     paymentSettled = false;
     stopPolling();
+    closeRazorpayOverlay();
 
     try {
       const formData = new FormData(form);
@@ -452,6 +592,15 @@
         throw new Error('Unable to start payment. Please try again.');
       }
 
+      const pending = {
+        reference: intent.payment.reference,
+        cause: selectedCause,
+        amount,
+        currency,
+        donor_name: donorName,
+      };
+      savePendingDonation(pending);
+
       await loadRazorpayScript();
       await openRazorpayCheckout(
         intent,
@@ -460,6 +609,7 @@
         donorPhone,
         intent.payment.reference,
         token,
+        pending,
       );
     } catch (err) {
       if (!paymentSettled) {
@@ -472,4 +622,6 @@
       }
     }
   });
+
+  handlePaymentReturn();
 })();
