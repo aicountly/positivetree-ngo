@@ -567,7 +567,7 @@
   position: relative;
 }
 
-.donate-modal .modal-close {
+.donate-modal > .modal-close {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -577,6 +577,15 @@
   line-height: 1;
   cursor: pointer;
   color: var(--color-text-muted);
+}
+
+.donate-modal:has(#donate-success-panel:not([hidden])) > .modal-close {
+  display: none;
+}
+
+#donate-success-panel .donate-success__close {
+  width: 100%;
+  margin-top: 0.25rem;
 }
 
 .donate-modal__cause-label {
