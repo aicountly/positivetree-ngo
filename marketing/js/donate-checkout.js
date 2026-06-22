@@ -279,6 +279,33 @@
     }
   }
 
+  function handlePaymentCancelledOrFailed(params, pending) {
+    const paymentCancelled = params.get('payment_cancelled') === '1';
+    const paymentFailed = params.get('payment_failed') === '1';
+    if (!paymentCancelled && !paymentFailed) {
+      return false;
+    }
+
+    history.replaceState({}, '', `${window.location.pathname}`);
+
+    const cause = pending?.cause || '';
+    if (cause) {
+      openModal(cause);
+    } else {
+      modal.classList.add('active');
+      formPanel.hidden = false;
+      successPanel.hidden = true;
+      showConfirming(false);
+    }
+
+    showError(
+      paymentCancelled
+        ? 'Payment was cancelled. No amount was charged—you can try again when ready.'
+        : 'Payment could not be completed. Please try again or contact info@positivetree.ngo if you need help.',
+    );
+    return true;
+  }
+
   async function handlePaymentReturn() {
     const params = new URLSearchParams(window.location.search);
     const reference = params.get('donation_ref');
@@ -289,6 +316,10 @@
     const pending = readPendingDonation();
 
     if (!reference) {
+      return;
+    }
+
+    if (handlePaymentCancelledOrFailed(params, pending)) {
       return;
     }
 
