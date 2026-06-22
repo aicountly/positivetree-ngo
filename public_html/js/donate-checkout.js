@@ -10,6 +10,8 @@
   const RAZORPAY_SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
   const DONATING_CLIENT_NAME = 'Positive Tree';
   const PENDING_KEY = 'positivetree_donate_pending';
+  const POLL_INTERVAL_MS = 2000;
+  const POLL_MAX_MS = 180000;
 
   const modal = document.getElementById('donate-modal');
   if (!modal) return;
@@ -241,7 +243,7 @@
     return razorpayScriptPromise;
   }
 
-  async function openRazorpayCheckout(config) {
+  async function openRazorpayCheckout(config, hooks = {}) {
     const Razorpay = await loadRazorpayScript();
 
     return new Promise((resolve, reject) => {
@@ -267,6 +269,7 @@
       }
 
       const instance = new Razorpay(options);
+      hooks.onReady?.(instance);
 
       instance.on('payment.success', (response) => resolve(response));
       instance.on('payment.failed', (response) => {
@@ -279,6 +282,50 @@
         reject(error);
       }
     });
+  }
+
+  function closeRazorpayCheckout(instance) {
+    if (!instance) return;
+    try {
+      instance.close();
+    } catch (_err) {
+      // Ignore if already closed.
+    }
+  }
+
+  function startPaymentPolling(reference, pending, onCompleted) {
+    let pollTimer = null;
+    const startedAt = Date.now();
+
+    const stopPolling = () => {
+      if (pollTimer !== null) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    };
+
+    const poll = async () => {
+      try {
+        const payment = await fetchPaymentStatus(reference, true);
+        if (payment?.status === 'completed') {
+          stopPolling();
+          await onCompleted(payment);
+        }
+      } catch (_err) {
+        // Keep polling through transient errors (UPI QR can take a few seconds).
+      }
+    };
+
+    poll();
+    pollTimer = setInterval(() => {
+      if (Date.now() - startedAt >= POLL_MAX_MS) {
+        stopPolling();
+        return;
+      }
+      poll();
+    }, POLL_INTERVAL_MS);
+
+    return stopPolling;
   }
 
   async function fetchCheckoutConfig(reference) {
@@ -403,17 +450,66 @@
     showConfirming(true);
     showError('');
 
+    let settled = false;
+    let checkoutInstance = null;
+    let stopPolling = null;
+
+    const finishOnce = async (razorpayResponse) => {
+      if (settled) return;
+      settled = true;
+      if (stopPolling) stopPolling();
+      closeRazorpayCheckout(checkoutInstance);
+      await finalizeCompletedPayment(reference, pending, razorpayResponse);
+    };
+
+    stopPolling = startPaymentPolling(reference, pending, async () => {
+      await finishOnce(null);
+    });
+
     try {
-      const response = await openRazorpayCheckout(razorpay);
+      const response = await openRazorpayCheckout(razorpay, {
+        onReady: (instance) => {
+          checkoutInstance = instance;
+        },
+      });
+
+      if (settled) {
+        return;
+      }
+
+      if (stopPolling) stopPolling();
 
       if (!response) {
+        const synced = await fetchPaymentStatus(reference, true);
+        if (synced?.status === 'completed') {
+          await finishOnce(null);
+          return;
+        }
         showConfirming(false);
         showError('Payment was cancelled. No amount was charged—you can try again when ready.');
         return;
       }
 
-      await finalizeCompletedPayment(reference, pending, response);
+      await finishOnce(response);
     } catch (err) {
+      if (stopPolling) stopPolling();
+
+      if (!settled) {
+        try {
+          const synced = await fetchPaymentStatus(reference, true);
+          if (synced?.status === 'completed') {
+            await finishOnce(null);
+            return;
+          }
+        } catch (_syncErr) {
+          // Fall through to error message below.
+        }
+      }
+
+      if (settled) {
+        return;
+      }
+
       showConfirming(false);
       showError(
         err && err.message
