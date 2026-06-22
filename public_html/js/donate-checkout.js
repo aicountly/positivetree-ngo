@@ -1,15 +1,18 @@
 /*
  * Positive Tree donation checkout.
  *
- * All payment processing goes through sispl.org/api (REST). Razorpay checkout
- * opens on this page; sispl.org handles orders, verification, and callbacks
- * on the server. The donor never visits sispl.org in the browser.
+ * Payment intents and verification use sispl.org/api (REST). Razorpay checkout
+ * must open on sispl.org (registered merchant domain) — never on this site.
+ * A small popup runs checkout on sispl.org; results return here via postMessage.
  */
 (function () {
   const DONATE_API_BASE = 'https://sispl.org/api';
-  const RAZORPAY_SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
+  const SISPL_ORIGIN = 'https://sispl.org';
+  const SISPL_PAY_URL = `${SISPL_ORIGIN}/pay`;
+  const SISPL_BRIDGE_URL = `${SISPL_ORIGIN}/pay/complete`;
   const DONATING_CLIENT_NAME = 'Positive Tree';
   const PENDING_KEY = 'positivetree_donate_pending';
+  const POPUP_NAME = 'positivetree_payment';
   const POLL_INTERVAL_MS = 2000;
   const POLL_MAX_MS = 180000;
 
@@ -35,7 +38,6 @@
 
   let selectedCause = '';
   let csrfToken = '';
-  let razorpayScriptPromise = null;
 
   function showError(message) {
     if (!errorEl) return;
@@ -86,6 +88,95 @@
 
   function partnerReturnUrl() {
     return `${window.location.origin}/donate/`;
+  }
+
+  function buildPartnerBridgeReturnUrl() {
+    const bridge = new URL(SISPL_BRIDGE_URL);
+    bridge.searchParams.set('partner', partnerReturnUrl());
+    return bridge.toString();
+  }
+
+  function buildSisplPayPopupUrl(reference) {
+    const url = new URL(SISPL_PAY_URL);
+    url.searchParams.set('ref', reference);
+    url.searchParams.set('return_to', buildPartnerBridgeReturnUrl());
+    url.searchParams.set('popup', '1');
+    return url.toString();
+  }
+
+  function buildSisplPayRedirectUrl(reference) {
+    const url = new URL(SISPL_PAY_URL);
+    url.searchParams.set('ref', reference);
+    url.searchParams.set('return_to', partnerReturnUrl());
+    return url.toString();
+  }
+
+  function openPaymentPopup(reference) {
+    const width = 520;
+    const height = 720;
+    const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+    const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
+    const features = `popup=yes,width=${width},height=${height},left=${left},top=${top}`;
+
+    return window.open(buildSisplPayPopupUrl(reference), POPUP_NAME, features);
+  }
+
+  function closePaymentPopup(popup) {
+    if (!popup || popup.closed) return;
+    try {
+      popup.close();
+    } catch (_err) {
+      // Ignore popup close failures.
+    }
+  }
+
+  function waitForPaymentPopupResult(reference, popup) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      let pollTimer = null;
+
+      const cleanup = () => {
+        window.removeEventListener('message', onMessage);
+        if (pollTimer !== null) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      };
+
+      const finish = (result) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        closePaymentPopup(popup);
+        resolve(result);
+      };
+
+      const fail = (reason) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        closePaymentPopup(popup);
+        reject(reason);
+      };
+
+      const onMessage = (event) => {
+        if (event.origin !== SISPL_ORIGIN) return;
+        const data = event.data;
+        if (!data || data.type !== 'sispl-payment-result') return;
+
+        const messageReference = data.reference || data.donation_ref || '';
+        if (messageReference && messageReference !== reference) return;
+
+        finish(data);
+      };
+
+      window.addEventListener('message', onMessage);
+      pollTimer = setInterval(() => {
+        if (popup && popup.closed && !settled) {
+          fail({ cancelled: true });
+        }
+      }, 400);
+    });
   }
 
   async function parseJson(response) {
@@ -211,89 +302,7 @@
     }
   }
 
-  function loadRazorpayScript() {
-    if (window.Razorpay) {
-      return Promise.resolve(window.Razorpay);
-    }
-
-    if (!razorpayScriptPromise) {
-      razorpayScriptPromise = new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${RAZORPAY_SCRIPT_URL}"]`);
-        if (existing) {
-          existing.addEventListener('load', () => resolve(window.Razorpay));
-          existing.addEventListener('error', () => reject(new Error('Failed to load payment gateway. Check your connection or ad blocker.')));
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = RAZORPAY_SCRIPT_URL;
-        script.async = true;
-        script.onload = () => {
-          if (window.Razorpay) {
-            resolve(window.Razorpay);
-          } else {
-            reject(new Error('Payment gateway unavailable. Please try again.'));
-          }
-        };
-        script.onerror = () => reject(new Error('Failed to load payment gateway. Check your connection or ad blocker.'));
-        document.body.appendChild(script);
-      });
-    }
-
-    return razorpayScriptPromise;
-  }
-
-  async function openRazorpayCheckout(config, hooks = {}) {
-    const Razorpay = await loadRazorpayScript();
-
-    return new Promise((resolve, reject) => {
-      const options = {
-        key: config.key_id,
-        amount: config.amount,
-        currency: config.currency,
-        name: config.name || DONATING_CLIENT_NAME,
-        description: config.description,
-        order_id: config.order_id,
-        prefill: config.prefill || {},
-        notes: config.notes || {},
-        theme: { color: '#3d7c47' },
-        handler: (response) => resolve(response),
-        modal: {
-          ondismiss: () => resolve(null),
-        },
-      };
-
-      if (config.callback_url) {
-        options.callback_url = config.callback_url;
-        options.redirect = true;
-      }
-
-      const instance = new Razorpay(options);
-      hooks.onReady?.(instance);
-
-      instance.on('payment.success', (response) => resolve(response));
-      instance.on('payment.failed', (response) => {
-        reject(new Error(response.error?.description || 'Payment failed'));
-      });
-
-      try {
-        instance.open();
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  function closeRazorpayCheckout(instance) {
-    if (!instance) return;
-    try {
-      instance.close();
-    } catch (_err) {
-      // Ignore if already closed.
-    }
-  }
-
-  function startPaymentPolling(reference, pending, onCompleted) {
+  function startPaymentPolling(reference, onCompleted) {
     let pollTimer = null;
     const startedAt = Date.now();
 
@@ -309,7 +318,7 @@
         const payment = await fetchPaymentStatus(reference, true);
         if (payment?.status === 'completed') {
           stopPolling();
-          await onCompleted(payment);
+          await onCompleted();
         }
       } catch (_err) {
         // Keep polling through transient errors (UPI QR can take a few seconds).
@@ -326,18 +335,6 @@
     }, POLL_INTERVAL_MS);
 
     return stopPolling;
-  }
-
-  async function fetchCheckoutConfig(reference) {
-    const params = new URLSearchParams({ return_to: partnerReturnUrl() });
-    const checkout = await donateApi(
-      `/payments/${encodeURIComponent(reference)}/checkout?${params.toString()}`,
-      { method: 'GET', headers: { Accept: 'application/json' } },
-    );
-    if (!checkout.razorpay?.order_id) {
-      throw new Error('Payment checkout is not available. Please try again.');
-    }
-    return checkout.razorpay;
   }
 
   function showSuccessPanel(payment, fallbackAmount, fallbackCurrency, fallbackCause) {
@@ -443,35 +440,53 @@
     );
   }
 
-  async function runInlineCheckout(reference, pending, token) {
-    const razorpay = await fetchCheckoutConfig(reference);
+  function isCancelledResult(result) {
+    return result?.status === 'cancelled' || result?.payment_cancelled === '1';
+  }
 
+  function isFailedResult(result) {
+    return result?.status === 'failed' || result?.payment_failed === '1';
+  }
+
+  async function runSisplPopupCheckout(reference, pending) {
     setSubmitting(false);
     showConfirming(true);
     showError('');
 
     let settled = false;
-    let checkoutInstance = null;
+    let popup = null;
     let stopPolling = null;
 
-    const finishOnce = async (razorpayResponse) => {
+    const finishOnce = async (result) => {
       if (settled) return;
       settled = true;
       if (stopPolling) stopPolling();
-      closeRazorpayCheckout(checkoutInstance);
+      closePaymentPopup(popup);
+
+      const razorpayResponse = result?.razorpay_payment_id
+        ? {
+            razorpay_payment_id: result.razorpay_payment_id,
+            razorpay_order_id: result.razorpay_order_id,
+            razorpay_signature: result.razorpay_signature,
+          }
+        : null;
+
       await finalizeCompletedPayment(reference, pending, razorpayResponse);
     };
 
-    stopPolling = startPaymentPolling(reference, pending, async () => {
+    stopPolling = startPaymentPolling(reference, async () => {
       await finishOnce(null);
     });
 
+    popup = openPaymentPopup(reference);
+    if (!popup) {
+      if (stopPolling) stopPolling();
+      window.location.assign(buildSisplPayRedirectUrl(reference));
+      return;
+    }
+
     try {
-      const response = await openRazorpayCheckout(razorpay, {
-        onReady: (instance) => {
-          checkoutInstance = instance;
-        },
-      });
+      const result = await waitForPaymentPopupResult(reference, popup);
 
       if (settled) {
         return;
@@ -479,7 +494,8 @@
 
       if (stopPolling) stopPolling();
 
-      if (!response) {
+      if (isCancelledResult(result)) {
+        settled = true;
         const synced = await fetchPaymentStatus(reference, true);
         if (synced?.status === 'completed') {
           await finishOnce(null);
@@ -490,7 +506,14 @@
         return;
       }
 
-      await finishOnce(response);
+      if (isFailedResult(result)) {
+        settled = true;
+        showConfirming(false);
+        showError('Payment could not be completed. Please try again or contact info@positivetree.ngo if you need help.');
+        return;
+      }
+
+      await finishOnce(result);
     } catch (err) {
       if (stopPolling) stopPolling();
 
@@ -502,7 +525,7 @@
             return;
           }
         } catch (_syncErr) {
-          // Fall through to error message below.
+          // Fall through.
         }
       }
 
@@ -511,6 +534,10 @@
       }
 
       showConfirming(false);
+      if (err && err.cancelled) {
+        showError('Payment was cancelled. No amount was charged—you can try again when ready.');
+        return;
+      }
       showError(
         err && err.message
           ? err.message
@@ -690,7 +717,7 @@
       };
 
       savePendingDonation(pending);
-      await runInlineCheckout(intent.payment.reference, pending, token);
+      await runSisplPopupCheckout(intent.payment.reference, pending);
     } catch (err) {
       showConfirming(false);
       setSubmitting(false);
