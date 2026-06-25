@@ -131,13 +131,20 @@ export async function previewDocument(type) {
   }
 
   if (!response.ok) {
-    throw new Error('Unable to preview document')
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      const data = await response.json()
+      throw new Error(data?.error || 'Unable to preview document')
+    }
+    const text = await response.text()
+    throw new Error(text.slice(0, 200) || 'Unable to preview document')
   }
 
-  const blob = await response.blob()
-  const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  return response.blob()
+}
+
+export function documentPreviewFilename(type) {
+  return `${type}-preview.pdf`
 }
 
 export async function uploadDocumentSignature(file) {

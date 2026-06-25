@@ -173,26 +173,32 @@ class DocumentSettingsController
     {
         $format = $request->query['format'] ?? 'pdf';
 
-        if ($type === 'receipt') {
-            if ($format === 'html') {
-                header('Content-Type: text/html; charset=utf-8');
-                echo $this->pdf->previewReceiptHtml();
+        try {
+            if ($type === 'receipt') {
+                if ($format === 'html') {
+                    header('Content-Type: text/html; charset=utf-8');
+                    echo $this->pdf->previewReceiptHtml();
+                    return;
+                }
+                $pdf = $this->pdf->previewReceiptPdf();
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: inline; filename="receipt-preview.pdf"');
+                echo $pdf;
                 return;
             }
+
+            if ($format === 'html') {
+                header('Content-Type: text/html; charset=utf-8');
+                echo $this->pdf->previewCertificateHtml();
+                return;
+            }
+
+            $pdf = $this->pdf->previewCertificatePdf();
             header('Content-Type: application/pdf');
-            header('Content-Disposition: inline; filename="receipt-preview.pdf"');
-            echo $this->pdf->previewReceiptPdf();
-            return;
+            header('Content-Disposition: inline; filename="certificate-preview.pdf"');
+            echo $pdf;
+        } catch (\Throwable $e) {
+            Response::error($e->getMessage(), 502);
         }
-
-        if ($format === 'html') {
-            header('Content-Type: text/html; charset=utf-8');
-            echo $this->pdf->previewCertificateHtml();
-            return;
-        }
-
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="certificate-preview.pdf"');
-        echo $this->pdf->previewCertificatePdf();
     }
 }

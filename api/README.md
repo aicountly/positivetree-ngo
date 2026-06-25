@@ -131,12 +131,21 @@ Online donors receive a public receipt download link on the thank-you screen via
 
 ## PDF rendering engine
 
-The receipt and certificate templates use modern CSS (Grid, gradients, shadows, outline) which dompdf does not implement. The PDF pipeline therefore prefers a **self-hosted [Gotenberg](https://gotenberg.dev)** (Chromium-based) HTTP service when `GOTENBERG_URL` is set, and falls back to dompdf otherwise.
+Receipt and certificate PDFs are rendered exclusively by a **self-hosted [Gotenberg](https://gotenberg.dev)** (Chromium-based) HTTP service. Configure Gotenberg in `public_html/api/.env`; PDF endpoints fail with an error if it is missing or unreachable.
 
+```env
+GOTENBERG_BASE_URL=https://pdf.apis.aicountly.com
+GOTENBERG_HTML_PATH=/forms/chromium/convert/html
+GOTENBERG_HEALTH_PATH=/health
+GOTENBERG_TIMEOUT_SECONDS=60
+GOTENBERG_CONNECT_TIMEOUT_SECONDS=10
+GOTENBERG_VERIFY_SSL=true
+GOTENBERG_AUTH_MODE=basic
+GOTENBERG_USERNAME=your-username
+GOTENBERG_PASSWORD=your-password
 ```
-GOTENBERG_URL set  ->  Chromium PDF (matches HTML preview pixel-for-pixel)
-GOTENBERG_URL blank -> dompdf       (works, but CSS grid / gradients degrade)
-```
+
+(`GOTENBERG_URL` is still accepted as a legacy alias for `GOTENBERG_BASE_URL`.)
 
 ### Local development
 
@@ -147,7 +156,8 @@ docker run --rm -p 3000:3000 gotenberg/gotenberg:8
 Then in `public_html/api/.env`:
 
 ```env
-GOTENBERG_URL=http://127.0.0.1:3000
+GOTENBERG_BASE_URL=http://127.0.0.1:3000
+GOTENBERG_AUTH_MODE=none
 ```
 
 Restart the API server, then preview at `/app/settings/documents`.
@@ -163,13 +173,7 @@ docker run -d --restart unless-stopped \
   gotenberg/gotenberg:8
 ```
 
-Front it with nginx + TLS (e.g. `https://pdf.example.com`) and restrict source IPs to the cPanel server. Set in `public_html/api/.env`:
-
-```env
-GOTENBERG_URL=https://pdf.example.com
-```
-
-If Gotenberg is unreachable at request time, the renderer logs the failure to the PHP error log and falls back to dompdf so PDF generation never hard-fails.
+Front it with nginx + TLS and restrict source IPs to the cPanel server. Set `GOTENBERG_BASE_URL`, auth mode, and credentials in `public_html/api/.env` to match your Gotenberg gateway.
 
 ## Security notes
 

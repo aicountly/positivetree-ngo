@@ -71,14 +71,4 @@ if (substr($certPdf, 0, 4) !== '%PDF') {
 echo 'receipt_pdf_bytes=' . strlen($receiptPdf) . "\n";
 echo 'certificate_pdf_bytes=' . strlen($certPdf) . "\n";
 
-echo "-- gotenberg fallback path (unreachable URL) --\n";
-$gbBad = new GotenbergPdfService('http://127.0.0.1:1');
-$dispatcher = new DocumentPdfService($gbBad);
-$pdfBytes = $dispatcher->renderPdf($receiptHtml, $settings['receipt']['print'] ?? []);
-if (substr($pdfBytes, 0, 4) !== '%PDF') {
-    fwrite(STDERR, "fallback PDF magic header missing\n");
-    exit(1);
-}
-echo 'fallback_pdf_bytes=' . strlen($pdfBytes) . "\n";
-
 echo "OK\n";

@@ -86,7 +86,10 @@ if (!function_exists('esc')) {
 
 function gotenbergUrl(): ?string
 {
-    $url = config('GOTENBERG_URL');
+    $url = config('GOTENBERG_BASE_URL');
+    if ($url === null) {
+        $url = config('GOTENBERG_URL');
+    }
     if ($url === null) {
         return null;
     }

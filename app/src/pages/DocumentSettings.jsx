@@ -1,5 +1,11 @@
-import { useEffect, useState } from 'react'
-import { api, fetchSignaturePreviewBlob, previewDocument, uploadDocumentSignature } from '../api/client'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  api,
+  documentPreviewFilename,
+  fetchSignaturePreviewBlob,
+  previewDocument,
+  uploadDocumentSignature,
+} from '../api/client'
 import { Alert, Button, Card, Input, Select, Textarea } from '../components/ui'
 
 const DOCUMENT_LOGO_SRC = '/images/2023/07/logo-tree.png'
@@ -158,6 +164,23 @@ export default function DocumentSettings() {
   const [submitting, setSubmitting] = useState(false)
   const [uploadingSignature, setUploadingSignature] = useState(false)
   const [signaturePreview, setSignaturePreview] = useState('')
+  const [previewBlobUrl, setPreviewBlobUrl] = useState(null)
+  const [previewType, setPreviewType] = useState(null)
+  const [previewBusy, setPreviewBusy] = useState(false)
+
+  const closePdfPreview = useCallback(() => {
+    setPreviewBlobUrl((current) => {
+      if (current) URL.revokeObjectURL(current)
+      return null
+    })
+    setPreviewType(null)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl)
+    }
+  }, [previewBlobUrl])
 
   useEffect(() => {
     let cancelled = false
@@ -268,6 +291,26 @@ export default function DocumentSettings() {
       setError(err.message)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handlePreviewPdf() {
+    setError('')
+    setPreviewBusy(true)
+
+    try {
+      const blob = await previewDocument(tab)
+      const url = URL.createObjectURL(blob)
+      setPreviewBlobUrl((current) => {
+        if (current) URL.revokeObjectURL(current)
+        return url
+      })
+      setPreviewType(tab)
+    } catch (err) {
+      closePdfPreview()
+      setError(err.message)
+    } finally {
+      setPreviewBusy(false)
     }
   }
 
@@ -532,17 +575,42 @@ export default function DocumentSettings() {
           <Button type="submit" disabled={submitting}>
             {submitting ? 'Saving...' : 'Save settings'}
           </Button>
-          <Button type="button" variant="secondary" onClick={async () => {
-            try {
-              await previewDocument(tab)
-            } catch (err) {
-              setError(err.message)
-            }
-          }}>
-            Preview PDF
+          <Button type="button" variant="secondary" disabled={previewBusy} onClick={handlePreviewPdf}>
+            {previewBusy ? 'Generating PDF...' : 'Preview PDF'}
           </Button>
         </div>
       </form>
+
+      {previewBlobUrl ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+          onClick={closePdfPreview}
+        >
+          <div
+            className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <div className="font-semibold text-slate-800">
+                {previewType === 'certificate' ? 'Donation certificate' : 'Donation receipt'} preview
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewBlobUrl}
+                  download={documentPreviewFilename(previewType || tab)}
+                  className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+                >
+                  Download PDF
+                </a>
+                <Button type="button" variant="secondary" className="px-3 py-1.5" onClick={closePdfPreview}>
+                  Close
+                </Button>
+              </div>
+            </div>
+            <iframe title="Document PDF preview" src={previewBlobUrl} className="w-full flex-1" />
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
