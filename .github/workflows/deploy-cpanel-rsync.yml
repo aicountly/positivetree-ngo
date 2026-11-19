@@ -1,4 +1,4 @@
-name: Deploy to cPanel via rsync (Production)
+name: Deploy to S01 via rsync (Production)
 
 on:
   workflow_dispatch:
@@ -10,6 +10,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Verify S01 deployment target
+        env:
+          AIC_S01_TARGETS: '[{"domain":"aicountly.co.in","account":"aicountlyco","root":"/home/aicountlyco/public_html","verified_blueprint":true,"protected_nested_roots":["/home/aicountlyco/public_html/my.aicountly.co.in"],"ssh_login":"aicda6c4e91af2f617e4"}]'
+          AIC_TARGET_CPANEL_SSH_HOST: ${{ secrets.CPANEL_SSH_HOST }}
+          AIC_TARGET_CPANEL_SSH_REMOTE_DIR: ${{ secrets.CPANEL_SSH_REMOTE_DIR }}
+          AIC_TARGET_CPANEL_SSH_USER: ${{ secrets.CPANEL_SSH_USER }}
+          AIC_TARGET_CPANEL_SSH_PORT: ${{ secrets.CPANEL_SSH_PORT }}
+        run: python3 "$GITHUB_WORKSPACE/.github/scripts/s01-target-guard.py"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -47,7 +56,7 @@ jobs:
             echo "::error::SSH key is invalid or passphrase-protected. Regenerate on the server with: ssh-keygen -t ed25519 -C github-actions-positivetree -f deploy_key -N \"\""
             exit 1
           fi
-          ssh-keyscan -H "${{ secrets.CPANEL_SSH_HOST }}" >> ~/.ssh/known_hosts
+          python3 "$GITHUB_WORKSPACE/.github/scripts/s01-keyscan.py" -H "${{ secrets.CPANEL_SSH_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy with rsync
         env:
@@ -59,6 +68,7 @@ jobs:
             --exclude='.env' \
             --exclude='api/.env' \
             --exclude='api/data/' \
-            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
+            --exclude='/my.aicountly.co.in/' \
+            -e "ssh -p 9898 -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
             ./public_html/ \
             "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}"
