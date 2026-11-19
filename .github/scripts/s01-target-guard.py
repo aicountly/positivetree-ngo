@@ -9,7 +9,7 @@ def validate(values,targets):
  allowed=set()
  for target in targets:
   root=target['root'];home='/home/'+target['account'];allowed.add(root.rstrip('/'))
-  if root.startswith(home+'/'):allowed.add(root[len(home)+1:].rstrip('/'))
+  if not target.get('absolute_root_only',False) and root.startswith(home+'/'):allowed.add(root[len(home)+1:].rstrip('/'))
  for name,value in values.items():
   if not value:raise ValueError('missing_transport_setting')
   if name.endswith('_HOST'):

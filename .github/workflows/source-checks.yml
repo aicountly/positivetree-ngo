@@ -60,6 +60,10 @@ jobs:
               checked += 1
           print(f'Validated {checked} tracked files')
           PY
+      - name: Verify rsync preserves the nested My site and private data
+        run: |
+          command -v rsync
+          python3 -m unittest discover -s .github/scripts/tests -p test_deployment_scope.py
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

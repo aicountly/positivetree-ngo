@@ -12,12 +12,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify S01 deployment target
+        id: s01_target
         env:
-          AIC_S01_TARGETS: '[{"domain":"aicountly.co.in","account":"aicountlyco","root":"/home/aicountlyco/public_html","verified_blueprint":true,"protected_nested_roots":["/home/aicountlyco/public_html/my.aicountly.co.in"],"ssh_login":"aicda6c4e91af2f617e4"}]'
-          AIC_TARGET_CPANEL_SSH_HOST: ${{ secrets.CPANEL_SSH_HOST }}
-          AIC_TARGET_CPANEL_SSH_REMOTE_DIR: ${{ secrets.CPANEL_SSH_REMOTE_DIR }}
-          AIC_TARGET_CPANEL_SSH_USER: ${{ secrets.CPANEL_SSH_USER }}
-          AIC_TARGET_CPANEL_SSH_PORT: ${{ secrets.CPANEL_SSH_PORT }}
+          AIC_S01_TARGETS: '[{"domain":"aicountly.co.in","account":"aicountlyco","root":"/home/aicountlyco/public_html","verified_blueprint":true,"absolute_root_only":true,"protected_nested_roots":["/home/aicountlyco/public_html/my.aicountly.co.in"],"ssh_login":"aicda6c4e91af2f617e4"}]'
+          AIC_TARGET_S01_SSH_HOST: ${{ secrets.S01_SSH_HOST }}
+          AIC_TARGET_S01_SSH_REMOTE_DIR: ${{ secrets.S01_SSH_REMOTE_DIR }}
+          AIC_TARGET_S01_SSH_USER: ${{ secrets.S01_SSH_USER }}
+          AIC_TARGET_S01_SSH_PORT: ${{ secrets.S01_SSH_PORT }}
         run: python3 "$GITHUB_WORKSPACE/.github/scripts/s01-target-guard.py"
 
       - name: Setup Node
@@ -41,12 +42,12 @@ jobs:
           npm ci --prefix app
           npm run build --prefix app
 
-      # CPANEL_SSH_PRIVATE_KEY must be unencrypted (no passphrase).
-      # On cPanel/Linux: ssh-keygen -t ed25519 -C "github-actions-positivetree" -f deploy_key -N ""
+      # S01_SSH_PRIVATE_KEY must be unencrypted (no passphrase).
+      # On S01/Linux: ssh-keygen -t ed25519 -C "github-actions-positivetree" -f deploy_key -N ""
       # Do NOT use -N '""' on Linux — that sets a passphrase, not an empty one.
       - name: Setup SSH key
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.S01_SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
@@ -56,19 +57,20 @@ jobs:
             echo "::error::SSH key is invalid or passphrase-protected. Regenerate on the server with: ssh-keygen -t ed25519 -C github-actions-positivetree -f deploy_key -N \"\""
             exit 1
           fi
-          python3 "$GITHUB_WORKSPACE/.github/scripts/s01-keyscan.py" -H "${{ secrets.CPANEL_SSH_HOST }}" >> ~/.ssh/known_hosts
+          python3 "$GITHUB_WORKSPACE/.github/scripts/s01-keyscan.py" -H "${{ secrets.S01_SSH_HOST }}" > ~/.ssh/known_hosts
 
       - name: Deploy with rsync
         env:
-          SSH_HOST: ${{ secrets.CPANEL_SSH_HOST }}
-          SSH_USER: ${{ secrets.CPANEL_SSH_USER }}
-          REMOTE_DIR: ${{ secrets.CPANEL_SSH_REMOTE_DIR }}
+          SSH_HOST: ${{ secrets.S01_SSH_HOST }}
+          SSH_USER: ${{ secrets.S01_SSH_USER }}
+          REMOTE_DIR: ${{ secrets.S01_SSH_REMOTE_DIR }}
         run: |
+          [ "$REMOTE_DIR" = "/home/aicountlyco/public_html" ] || { echo "::error::Unexpected S01 document root."; exit 1; }
           rsync -avz --delete \
             --exclude='.env' \
             --exclude='api/.env' \
             --exclude='api/data/' \
             --exclude='/my.aicountly.co.in/' \
-            -e "ssh -p 9898 -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
+            -e "ssh -p 9898 -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
             ./public_html/ \
             "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}"
